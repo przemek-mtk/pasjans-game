@@ -1,4 +1,4 @@
-export class Cart {
+export class Card {
     constructor(visible) {
         this.visible = visible;
     }

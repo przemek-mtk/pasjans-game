@@ -1,97 +1,71 @@
+import { Game } from "./classes/Game.js";
 
-// class A {
-//   // public isVisible: true;
-//   constructor(public isVisible: boolean){}
+const container = document.querySelector("#container") as HTMLDivElement;
+const boxCards = Array.from(
+  document.querySelectorAll(".box-cards")
+) as HTMLDivElement[];
+const helpersBox = document.querySelector("#helpers") as HTMLDivElement;
 
-//   setVisibleToTrue() {
-//     this.isVisible = true;
-//   }
-// }
+let g = new Game(container);
+g.startGame();
 
-// class B extends A {
-//   // public color: "red";
-//   constructor(public color: string, isVisible: boolean){
-//     super(isVisible);
-//   }
-// }
+//dodaje do pudełek karty
+boxCards.forEach((box, index) => {
+  g.render(box, index + 1);
 
-// let pik10 = new B("pik", false)
-// console.log(pik10)
-// pik10.setVisibleToTrue();
-// console.log(pik10)
+  //drag and dropp settings
+  box.addEventListener("drop", (e: DragEvent) => {
+    e.preventDefault();
+    const element = e.target as Element;
+    const data = e.dataTransfer?.getData("id") as string;
 
-
-class Game {
-  private 
-
-  private getArray() {
-    return [...Array(13).keys()];
-  }
-
-  private losuj(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-
-  public mojeKarty() {
-    let color = ["pik", "trefl", "karo", "kier"];
-    let cards = {
-      pik: this.getArray(),
-      trefl: this.getArray(),
-      karo: this.getArray(),
-      kier: this.getArray(),
-    };
-
-    return Array(52)
-      .fill(null)
-      .map((i) => {
-        let idK = this.losuj(0, color.length - 1); //id koloru - potrzebne do usunięcia
-        let k = color[idK]; //kolor karty
-
-        // if(this.carta[k].length === 0) {
-        //   this.kolor.splice(idK, 1);
-        //   console.log(this.kolor)
-        //   idK = this.losuj(0, this.kolor.length - 1); //id koloru - potrzebne do usunięcia
-        //   k = this.kolor[idK]; //kolor karty
-        // }
-
-        let id = this.losuj(0, cards[k].length - 1); //index wartosci karty
-
-        let v = cards[k].splice(id, 1); //wartość karty plus wycinam element z tablicy
-
-        //sprawdzma czy tablica nie jest pusta
-        if (cards[k].length === 0) {
-          color.splice(idK, 1);
-        }
-
-        console.log(k, v[0]);
-
-        //tutaj daj switcha z new Karta !!!
-        switch (k) {
-          case "pik":
-            return new Pik(k, v[0]);
-          case "karo":
-            return new Karo(k, v[0]);
-          case "kier":
-            return new Kier(k, v[0]);
-          case "trefl":
-            return new Trefl(k, v[0]);
-          default:
-            throw new Error(
-              "Something went wrong when I picked the cards for you!"
-            );
-        }
-      });
-  }
-}
+    //jeśli najechałeś na karte to dodaj obecnie trzymaną do parentElement
+    let isCard = element.classList.contains("card");
 
 
-let g = new Game();
-let a = g.mojeKarty();
-console.log(g.losuj(0, 0));
-console.log(a)
-let pik = a.filter((i) => i.color === "pik").length;
-let trefl = a.filter((i) => i.color === "trefl").length;
-let karo = a.filter((i) => i.color === "karo").length;
-let kier = a.filter((i) => i.color === "kier").length;
-// console.log(a);
-console.log("pik", pik, "trefl", trefl, "karo", karo, "kier", kier);
+    if (isCard) {
+      element.parentElement!.appendChild(document.getElementById(data)!);
+    } else {
+      element.appendChild(document.getElementById(data)!);
+    }
+  });
+  box.addEventListener("dragover", (e: DragEvent) => {
+    e.preventDefault();
+  });
+});
+
+g.render(helpersBox, 24, false);
+
+//to są wszystkie karty
+// const cards = Array.from(document.querySelectorAll(".card")) as HTMLDivElement[];
+
+// cards.forEach(card => card.addEventListener("mousedown", () => {
+//   console.log("tak działam")
+
+// }))
+
+//widoczne karty mogę przenosić
+const visibleCards = Array.from(
+  document.querySelectorAll(".visible")
+) as HTMLDivElement[];
+
+visibleCards.forEach((card) => {
+  // card.addEventListener("mousedown", () => {
+  // console.log("tak działam")
+  // })
+
+  card.addEventListener("dragstart", (e: DragEvent) => {
+    const element = e.target as Element;
+    e.dataTransfer?.setData("id", element.id);
+
+    requestAnimationFrame(function () {
+      element.classList.add("hide");
+    });
+  });
+
+  card.addEventListener("dragend", (e: DragEvent) => {
+    e.preventDefault();
+    const element = e.target as Element;
+    element.classList.remove("hide");
+  });
+});

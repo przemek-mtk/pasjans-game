@@ -1,6 +1,6 @@
 import { ICard } from "../interfaces/ICard.js";
 
-export class Cart implements ICard {
+export class Card implements ICard {
   constructor(public visible: boolean) {}
 
   setVisibleToTrue() {
