@@ -6,8 +6,8 @@ export interface IGame {
   // radnomMinMax(min:number, max:number): number;
   // randomCards(): IColor[];
 
-  //rozpoczyna grę - losuje karty
+  // rozpoczyna grę - losuje karty
   startGame(): void;
-  //rozdanie kart do odpowiednich miejsc
+  // rozdanie kart do odpowiednich miejsc
   render(elem: HTMLDivElement, howMany: number, visibilityLastElem: boolean): void;
 }

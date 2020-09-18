@@ -1,71 +1,96 @@
 import { Game } from "./classes/Game.js";
+import { Pik } from "./classes/Pik.js";
+import { Trefl } from "./classes/Trefl.js";
+import { Kier } from "./classes/Kier.js";
+import { Karo } from "./classes/Karo.js";
 
-const container = document.querySelector("#container") as HTMLDivElement;
-const boxCards = Array.from(
-  document.querySelectorAll(".box-cards")
-) as HTMLDivElement[];
-const helpersBox = document.querySelector("#helpers") as HTMLDivElement;
 
-let g = new Game(container);
+
+let g = new Game();
 g.startGame();
 
-//dodaje do pudełek karty
-boxCards.forEach((box, index) => {
-  g.render(box, index + 1);
 
-  //drag and dropp settings
-  box.addEventListener("drop", (e: DragEvent) => {
-    e.preventDefault();
-    const element = e.target as Element;
-    const data = e.dataTransfer?.getData("id") as string;
+let currentCard;
+const cards = Array.from(document.querySelectorAll(".card")!);
 
-    //jeśli najechałeś na karte to dodaj obecnie trzymaną do parentElement
-    let isCard = element.classList.contains("card");
+cards.forEach(card => {
+  //zapisywanie pozycji przy kliknieciu
+  let mouseDownPosition: {top: number, left: number};
+  //dane karty
+  const cardData = {
+    color: card.dataset.color,
+    value: Number(card.dataset.value),
+  } 
 
 
-    if (isCard) {
-      element.parentElement!.appendChild(document.getElementById(data)!);
-    } else {
-      element.appendChild(document.getElementById(data)!);
-    }
-  });
-  box.addEventListener("dragover", (e: DragEvent) => {
-    e.preventDefault();
-  });
-});
+  //w taki sposób muszę to robić bo inaczej nie usuną eventu
+  const m = (e) => move(e, mouseDownPosition, card)
 
-g.render(helpersBox, 24, false);
+  card.addEventListener("mousedown", (e: Event) => {
+    console.log("mousedown")
 
-//to są wszystkie karty
-// const cards = Array.from(document.querySelectorAll(".card")) as HTMLDivElement[];
+    currentCard = cardData;
 
-// cards.forEach(card => card.addEventListener("mousedown", () => {
-//   console.log("tak działam")
+    mouseDownPosition = { top: card.offsetTop - e.clientY, left: card.offsetLeft - e.clientX}
 
-// }))
+    window.addEventListener("mousemove", m);
 
-//widoczne karty mogę przenosić
-const visibleCards = Array.from(
-  document.querySelectorAll(".visible")
-) as HTMLDivElement[];
+  }
 
-visibleCards.forEach((card) => {
-  // card.addEventListener("mousedown", () => {
-  // console.log("tak działam")
+
+  card.addEventListener("mouseup", (e: Event) => {
+    console.log("mouseup")
+
+    currentCard = null;
+    
+    mouseDownPosition = null;
+
+    window.removeEventListener("mousemove", m)
+  })
+
+  // card.addEventListener("mouseover", (e: MouseEvent) => {
+
+  //   console.log("MOUSEOVER:: ", cardData)
+
   // })
 
-  card.addEventListener("dragstart", (e: DragEvent) => {
-    const element = e.target as Element;
-    e.dataTransfer?.setData("id", element.id);
 
-    requestAnimationFrame(function () {
-      element.classList.add("hide");
-    });
-  });
+})
 
-  card.addEventListener("dragend", (e: DragEvent) => {
-    e.preventDefault();
-    const element = e.target as Element;
-    element.classList.remove("hide");
-  });
-});
+
+const move = (e: Event, position: {top: number, left: number}, target) => {
+  // const move = (e) => {
+  let {top: targetTop, right: targetRight, bottom: targetBottom, left: targetLeft} = target.getBoundingClientRect();
+  
+  target.style.top = e.clientY + position.top + "px";
+  target.style.left = e.clientX + position.left + "px";
+
+  target.style.zIndex = "9999";
+
+  // sprawdzam czy nie najechałem przez przypadek na jakoś inną kartę
+  const visibleCards = Array.from(document.querySelectorAll(".visible"));
+
+  visibleCards.forEach(vCard => {
+    let {top, right, bottom, left} = vCard.getBoundingClientRect();
+    
+    console.log("l: ", targetLeft, "r: ", targetRight )
+
+    if(targetTop < bottom && targetTop > top && targetLeft < right && targetLeft > left) {
+      vCard.style.border ="2px solid #f0f"; 
+    } 
+    else if(targetTop < bottom && targetTop > top && targetRight > left && targetRight < right) {
+      vCard.style.border ="2px solid #f0f"; 
+    } 
+    else if(targetBottom > top && targetBottom < bottom && targetRight > left && targetRight < right) {
+      vCard.style.border ="2px solid #f0f"; 
+    } 
+    else if(targetBottom > top && targetBottom < bottom && targetLeft < right && targetLeft > left) {
+      vCard.style.border ="2px solid #f0f"; 
+    } 
+    else {
+      vCard.style.border ="2px solid red"; 
+    }
+    
+  })
+
+}

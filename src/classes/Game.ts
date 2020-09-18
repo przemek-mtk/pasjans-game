@@ -6,9 +6,11 @@ import { Trefl } from "./Trefl.js";
 
 export class Game implements IGame {
   //tutaj będą trafiały losowane karty
-  private cards: ICard[] = [];
+  // readonly cards: ICard[] = [];
 
-  constructor(private container: HTMLDivElement) {}
+  private cards: { color: string; value: number; visible: boolean }[] = [];
+
+  // constructor(private container: HTMLDivElement) {}
 
   private getArray() {
     return [...Array(13).keys()];
@@ -48,65 +50,135 @@ export class Game implements IGame {
           color.splice(idK, 1);
         }
 
-        //tutaj daj switcha z new Karta !!!
-        switch (k) {
-          case "pik":
-            return new Pik(k, v[0], false);
-            // return {}
-          case "karo":
-            return new Karo(k, v[0], false);
-          case "kier":
-            return new Kier(k, v[0], false);
-          case "trefl":
-            return new Trefl(k, v[0], false);
-          default:
-            throw new Error(
-              "Something went wrong when I picked the cards for you!"
-            );
-        }
+        return {
+          color: k,
+          value: v[0],
+          visible: false,
+        };
       });
   }
 
   startGame() {
     //losuje karty
-    //zwracam tablicę kart?
     this.cards = this.randomCards();
+    console.dir(this.cards);
 
-    // cards.forEach(element => {
-    //   let card = document.createElement("div");
-    //   card.innerText = element.color + " " + element.value;
-    //   card.classList.add("card");
+    //dodaje karty do body
+    // w pozycji :
+    // ***
+    //  **
+    //   *
 
-    //   this.container.append(card);
+    const container = document.querySelector("#container")!;
+    const cards = new DocumentFragment();
 
-    // })
+    let column = 7;
+    let last = 0;
+    let iterator = 0;
+
+    this.cards.forEach((card, id) => {
+      let cardDiv = document.createElement("div");
+      let color = document.createElement("p");
+      let value = document.createElement("p");
+
+      cardDiv.classList.add("card");
+      // cardDiv.classList.add("card", "invisible");
+      cardDiv.setAttribute("id", `card-${id}`)
+      // color.setAttribute("id", "color-card");
+      // value.setAttribute("id", "value-card");
+      cardDiv.dataset.color = card.color;
+      cardDiv.dataset.value = card.value.toString();
+      
+
+      color.innerText = card.color;
+      value.innerText = card.value.toString();
+
+
+      let top;
+      let left;
+      if(id < 28) {
+       
+          top = iterator * 100;
+          left = ((id - last) % column) * 100 + top;
+
+          cardDiv.style.top = `${100 + top}px`
+          cardDiv.style.left = `${100 + left}px`
+
+          if((id - last) % column === column - 1 && column > 1 ) {
+            last = id + 1;
+            column--;
+            iterator++;
+          }
+
+          //dla testu
+          if(id % 30 === 0) {
+            cardDiv.classList.add("visible");
+          }
+      }
+      
+
+      // if (card.visible === true) {
+      //   // cardDiv.classList.remove("invisible");
+      //   cardDiv.classList.add("visible");
+      //   // card.setAttribute("draggable", "true");
+      // }
+
+      cardDiv.append(color);
+      cardDiv.append(value);
+      cards.append(cardDiv);
+    })
+
+    container.append(cards);
+
+    // for(let i = 0; i < 7; i++) {
+    //   for(let j = 0; j < 7; j++) {
+    //   }
+    // }
+
   }
 
   //początkowe rozłożenie kart w odpowienich miejscach
-  render(elem: HTMLDivElement, num: number, visibilityLastElem: boolean = true) {
-    let cardsForThisBox = this.cards.splice(0, num);
-    let box = new DocumentFragment();
+  //renderuje kilka kart w jednym miejscu a nie po jednej karcie
+  // render(
+  //   elem: HTMLDivElement,
+  //   num: number,
+  //   visibilityLastElem: boolean = true
+  // ) {
+  //   let cardsForThisBox = this.cards.splice(0, num);
+  //   let box = new DocumentFragment();
 
-    //helpers też z tego korzysta i nie chce mieć widoczengo ostatniego elementu
-    if (visibilityLastElem) {
-      cardsForThisBox[cardsForThisBox.length - 1].setVisibleToTrue();
-    }
+  //   //helpers też z tego korzysta i nie chce mieć widoczengo ostatniego elementu
+  //   if (visibilityLastElem) {
+  //     cardsForThisBox[cardsForThisBox.length - 1].visible = true;
+  //   }
 
-    cardsForThisBox.forEach((element, id) => {
-      let card = document.createElement("div");
-      card.innerText = element.color + " " + element.value;
-      card.classList.add("card", "invisible");
-      card.setAttribute("id", `${element.color}-${element.value}`)
+  //   cardsForThisBox.forEach((element, id) => {
+  //     let card = document.createElement("div");
+  //     let color = document.createElement("p");
+  //     let value = document.createElement("p");
       
-      if (element.visible === true) {
-        card.classList.remove("invisible");
-        card.classList.add("visible");
-        card.setAttribute("draggable", "true")
-      }
+  //     card.classList.add("card", "invisible");
+  //     card.setAttribute("id", `${element.color}-${element.value}`)
+  //     color.setAttribute("id", "color-card");
+  //     value.setAttribute("id", "value-card");
 
-      box.append(card);
-    });
+  //     color.innerText = element.color;
+  //     value.innerText = element.value.toString();
 
-    elem.append(box);
-  }
+  //     card.style.top = `${id *  100}px`
+
+
+  //     if (element.visible === true) {
+  //       card.classList.remove("invisible");
+  //       card.classList.add("visible");
+  //       // card.setAttribute("draggable", "true");
+  //     }
+
+  //     card.append(color);
+  //     card.append(value);
+  //     box.append(card);
+  //   });
+
+  //   elem.append(box);
+  // }
 }

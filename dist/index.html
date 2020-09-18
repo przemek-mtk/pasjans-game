@@ -20,25 +20,21 @@
       .card {
         width: 40px;
         height: 90px;
-        margin: 10px;
+        /* margin: 10px; */
         border: 2px solid red;
         /* display: inline-block; */
         color: #fff;
         /* vertical-align: middle; */
 
-        /* position: absolute;
-        top: 0; left: 0; */
+        position: absolute;
+        /* top: 0; left: 0; */
         user-select: none;
       }
 
-      .box-cards {
-        width: 50px;
-        height: 120px;
-        margin: 10px;
-        border: 2px solid green;
-        display: inline-block;
-        vertical-align: middle;
+      .card p {
+        margin: 0; padding: 0;
       }
+
 
       .invisible {
         background: brown;
@@ -46,16 +42,9 @@
 
       .visible {
         background: transparent;
+        border-color: yellow;
       }
 
-      #helpers {
-        white-space: nowrap;
-      }
-
-      #helpers > * {
-        display: inline-block;
-        vertical-align: middle;
-      }
 
       /* dla karty kiedy jest przenoszona */
       .hide {
@@ -65,15 +54,7 @@
   </head>
   <body>
     <div id="container">
-      <div id="helpers"></div>
-
-      <div id="one" class="box-cards"></div>
-      <div id="two" class="box-cards"></div>
-      <div id="three" class="box-cards"></div>
-      <div id="four" class="box-cards"></div>
-      <div id="five" class="box-cards"></div>
-      <div id="six" class="box-cards"></div>
-      <div id="seven" class="box-cards"></div>
+      
     </div>
   </body>
 </html>

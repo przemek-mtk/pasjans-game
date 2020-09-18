@@ -1,5 +1,6 @@
 export class Card {
-    constructor(visible) {
+    constructor(value, visible) {
+        this.value = value;
         this.visible = visible;
     }
     setVisibleToTrue() {

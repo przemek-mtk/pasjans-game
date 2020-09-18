@@ -1,54 +1,58 @@
 import { Game } from "./classes/Game.js";
-const container = document.querySelector("#container");
-const boxCards = Array.from(document.querySelectorAll(".box-cards"));
-const helpersBox = document.querySelector("#helpers");
-let g = new Game(container);
+let g = new Game();
 g.startGame();
-//dodaje do pudełek karty
-boxCards.forEach((box, index) => {
-    g.render(box, index + 1);
-    //drag and dropp settings
-    box.addEventListener("drop", (e) => {
-        var _a;
-        e.preventDefault();
-        const element = e.target;
-        const data = (_a = e.dataTransfer) === null || _a === void 0 ? void 0 : _a.getData("id");
-        //jeśli najechałeś na karte to dodaj obecnie trzymaną do parentElement
-        let isCard = element.classList.contains("card");
-        if (isCard) {
-            element.parentElement.appendChild(document.getElementById(data));
+let currentCard;
+const cards = Array.from(document.querySelectorAll(".card"));
+cards.forEach(card => {
+    //zapisywanie pozycji przy kliknieciu
+    let mouseDownPosition;
+    //dane karty
+    const cardData = {
+        color: card.dataset.color,
+        value: Number(card.dataset.value),
+    };
+    //w taki sposób muszę to robić bo inaczej nie usuną eventu
+    const m = (e) => move(e, mouseDownPosition, card);
+    card.addEventListener("mousedown", (e) => {
+        console.log("mousedown");
+        currentCard = cardData;
+        mouseDownPosition = { top: card.offsetTop - e.clientY, left: card.offsetLeft - e.clientX };
+        window.addEventListener("mousemove", m);
+    }, card.addEventListener("mouseup", (e) => {
+        console.log("mouseup");
+        currentCard = null;
+        mouseDownPosition = null;
+        window.removeEventListener("mousemove", m);
+    }));
+    // card.addEventListener("mouseover", (e: MouseEvent) => {
+    //   console.log("MOUSEOVER:: ", cardData)
+    // })
+});
+const move = (e, position, target) => {
+    // const move = (e) => {
+    let { top: targetTop, right: targetRight, bottom: targetBottom, left: targetLeft } = target.getBoundingClientRect();
+    target.style.top = e.clientY + position.top + "px";
+    target.style.left = e.clientX + position.left + "px";
+    target.style.zIndex = "9999";
+    // sprawdzam czy nie najechałem przez przypadek na jakoś inną kartę
+    const visibleCards = Array.from(document.querySelectorAll(".visible"));
+    visibleCards.forEach(vCard => {
+        let { top, right, bottom, left } = vCard.getBoundingClientRect();
+        console.log("l: ", targetLeft, "r: ", targetRight);
+        if (targetTop < bottom && targetTop > top && targetLeft < right && targetLeft > left) {
+            vCard.style.border = "2px solid #f0f";
+        }
+        else if (targetTop < bottom && targetTop > top && targetRight > left && targetRight < right) {
+            vCard.style.border = "2px solid #f0f";
+        }
+        else if (targetBottom > top && targetBottom < bottom && targetRight > left && targetRight < right) {
+            vCard.style.border = "2px solid #f0f";
+        }
+        else if (targetBottom > top && targetBottom < bottom && targetLeft < right && targetLeft > left) {
+            vCard.style.border = "2px solid #f0f";
         }
         else {
-            element.appendChild(document.getElementById(data));
+            vCard.style.border = "2px solid red";
         }
     });
-    box.addEventListener("dragover", (e) => {
-        e.preventDefault();
-    });
-});
-g.render(helpersBox, 24, false);
-//to są wszystkie karty
-// const cards = Array.from(document.querySelectorAll(".card")) as HTMLDivElement[];
-// cards.forEach(card => card.addEventListener("mousedown", () => {
-//   console.log("tak działam")
-// }))
-//widoczne karty mogę przenosić
-const visibleCards = Array.from(document.querySelectorAll(".visible"));
-visibleCards.forEach((card) => {
-    // card.addEventListener("mousedown", () => {
-    // console.log("tak działam")
-    // })
-    card.addEventListener("dragstart", (e) => {
-        var _a;
-        const element = e.target;
-        (_a = e.dataTransfer) === null || _a === void 0 ? void 0 : _a.setData("id", element.id);
-        requestAnimationFrame(function () {
-            element.classList.add("hide");
-        });
-    });
-    card.addEventListener("dragend", (e) => {
-        e.preventDefault();
-        const element = e.target;
-        element.classList.remove("hide");
-    });
-});
+};
