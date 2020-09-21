@@ -106,14 +106,19 @@ export class Game {
                 left = ((id - last) % column) * 100 + top;
                 cardDiv.style.top = `${100 + top}px`;
                 cardDiv.style.left = `${100 + left}px`;
+                //zmiana visible dla konkretnych kart, które są ostatnimi w swoim stosie
+                if (id == last) {
+                    // console.log(id)
+                    card.visible = true;
+                    cardDiv.classList.add("visible");
+                }
+                else {
+                    cardDiv.classList.add("invisible");
+                }
                 if ((id - last) % column === column - 1 && column > 1) {
                     last = id + 1;
                     column--;
                     iterator++;
-                }
-                //dla testu
-                if (id % 30 === 0) {
-                    cardDiv.classList.add("visible");
                 }
             }
             // if (card.visible === true) {
