@@ -1,7 +1,6 @@
 import { Column } from "./Column.js";
 export class Game {
     constructor() {
-        this.cards = [];
         // public column = {
         //   one: new Column(),
         //   two: new Column(),
@@ -11,9 +10,9 @@ export class Game {
         //   six: new Column(),
         //   seven: new Column(),
         // };
-        this.columns = Array(7)
+        this.column = Array(7)
             .fill(null)
-            .map((e, i) => new Column(i));
+            .map((e) => new Column());
     }
     getArray() {
         // returned aray = [0,1,2,3,4, ..., 13]
@@ -75,16 +74,16 @@ export class Game {
                 let top = iterator * 100;
                 let left = (id - lastIdInRow + iterator) * 100;
                 let indexColumn = id - lastIdInRow + iterator;
-                this.columns[indexColumn].addCard([card]);
+                this.column[indexColumn].addCard([card]);
                 cardDiv.style.top = `${100 + top}px`;
                 cardDiv.style.left = `${100 + left}px`;
                 //zmiana visible dla konkretnych kart, które są ostatnimi w swoim stosie
-                cardDiv.classList.add("visible");
-                // if (id == lastIdInRow) {
-                //   cardDiv.classList.add("visible");
-                // } else {
-                //   cardDiv.classList.add("invisible");
-                // }
+                if (id == lastIdInRow) {
+                    cardDiv.classList.add("visible");
+                }
+                else {
+                    cardDiv.classList.add("invisible");
+                }
                 if ((id - lastIdInRow) % row === row - 1 && row > 1) {
                     lastIdInRow = id + 1;
                     row--;
@@ -96,10 +95,5 @@ export class Game {
             cards.append(cardDiv);
         });
         container.append(cards);
-    }
-    //czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
-    // zwraca klikniętą kolumnę
-    getColumn(data) {
-        return this.columns.find(col => col.getCardId(data) > -1);
     }
 }
