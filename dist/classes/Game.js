@@ -75,7 +75,8 @@ export class Game {
                 let top = iterator * 100;
                 let left = (id - lastIdInRow + iterator) * 100;
                 let indexColumn = id - lastIdInRow + iterator;
-                this.columns[indexColumn].addCard([card]);
+                // this.columns[indexColumn].addCard([card]);
+                this.columns[indexColumn].addCard([cardDiv]);
                 cardDiv.style.top = `${100 + top}px`;
                 cardDiv.style.left = `${100 + left}px`;
                 //zmiana visible dla konkretnych kart, które są ostatnimi w swoim stosie

@@ -97,7 +97,8 @@ export class Game implements IGame {
         let left = (id - lastIdInRow + iterator) * 100;
 
         let indexColumn = id - lastIdInRow + iterator;
-        this.columns[indexColumn].addCard([card]);
+        // this.columns[indexColumn].addCard([card]);
+        this.columns[indexColumn].addCard([cardDiv]);
 
         cardDiv.style.top = `${100 + top}px`;
         cardDiv.style.left = `${100 + left}px`;
@@ -124,6 +125,7 @@ export class Game implements IGame {
     });
 
     container.append(cards);
+    
   }
 
   //czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
