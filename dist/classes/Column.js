@@ -10,7 +10,7 @@ export class Column {
         this.cardsInColumn.splice(id);
     }
     // zwraca karty od klikniętej w dół
-    getCards(id) {
+    getCardsBelow(id) {
         return this.cardsInColumn.slice(id);
     }
     //zwraca ostatnią kartę z columny jeśli istnieje
@@ -23,6 +23,20 @@ export class Column {
     }
     // zwraca index klikniętej karty
     getCardId(data) {
-        return this.cardsInColumn.findIndex((card) => card.dataset.color === data.color && parseFloat(card.dataset.value) === data.value);
+        return this.cardsInColumn.findIndex((card) => card.dataset.color === data.color &&
+            parseFloat(card.dataset.value) === data.value);
+    }
+    // porusza karty prawo-lewo w sekcji "dobór kart"
+    moveCards() {
+        let lastThree = this.getCardsBelow(0).slice(-3).reverse();
+        lastThree.forEach((elem, i) => {
+            elem.style.left = `${100 + i * 100}px`;
+            if (i == 0) {
+                elem.classList.add("moved");
+            }
+            else {
+                elem.classList.remove("moved");
+            }
+        });
     }
 }

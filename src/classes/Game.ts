@@ -14,9 +14,15 @@ export class Game implements IGame {
   //   six: new Column(),
   //   seven: new Column(),
   // };
-  public columns = Array(7)
+  public columns = Array(9)
     .fill(null)
     .map((e, i) => new Column(i));
+    // columna z indexem 8 i 9 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym leewym rogu
+
+  // liczba w nawiasach to numer kolumny
+  // public forSelection = new Column(10);
+  // public forSelectionNext = new Column(11);
+
 
   private getArray(): number[] {
     // returned aray = [0,1,2,3,4, ..., 13]
@@ -72,6 +78,10 @@ export class Game implements IGame {
     //   *
     const container = document.querySelector("#container")!;
     const cards = new DocumentFragment();
+    const cardBoxes = new DocumentFragment();
+
+    const repeat = document.createElement("div")
+    repeat.classList.add("repeat");
 
     let row = 7;
     let lastIdInRow = 0;
@@ -90,7 +100,21 @@ export class Game implements IGame {
 
       color.innerText = card.color;
       value.innerText = card.value.toString();
-
+      //dodaje elementy do przetrzymywania kart
+      if(id < 7) {
+        const box = document.createElement("div");
+        box.dataset.value = "13";
+        box.classList.add("cards-box");
+        box.classList.add("special");
+        
+        box.style.top = `${145}px`;
+        box.style.left = `${95 + id * 100}px`;
+        
+        this.columns[id].addCard([box]);
+        cardBoxes.append(box);
+      }
+      
+      cardDiv.classList.add("invisible");
       //te są dodawane do 'gry' reszta do 'doboru
       if (id < 28) {
         let top = iterator * 100;
@@ -100,17 +124,15 @@ export class Game implements IGame {
         // this.columns[indexColumn].addCard([card]);
         this.columns[indexColumn].addCard([cardDiv]);
 
-        cardDiv.style.top = `${100 + top}px`;
+        cardDiv.style.top = `${150 + top}px`;
         cardDiv.style.left = `${100 + left}px`;
 
         //zmiana visible dla konkretnych kart, które są ostatnimi w swoim stosie
-        cardDiv.classList.add("visible");
-
-        // if (id == lastIdInRow) {
-        //   cardDiv.classList.add("visible");
-        // } else {
-        //   cardDiv.classList.add("invisible");
-        // }
+        if (id == lastIdInRow) {
+          cardDiv.classList.add("visible");
+          cardDiv.classList.add("moved");
+          cardDiv.classList.remove("invisible");
+        }
 
         if ((id - lastIdInRow) % row === row - 1 && row > 1) {
           lastIdInRow = id + 1;
@@ -119,11 +141,19 @@ export class Game implements IGame {
         }
       }
 
+      if(id > 27) {
+        cardDiv.classList.add("for-selection");
+        this.columns[7].addCard([cardDiv])
+      }
+
+
       cardDiv.append(color);
       cardDiv.append(value);
       cards.append(cardDiv);
     });
 
+    container.append(repeat);
+    container.append(cardBoxes);
     container.append(cards);
     
   }

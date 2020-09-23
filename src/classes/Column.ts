@@ -15,7 +15,7 @@ export class Column implements IColumn {
   }
 
   // zwraca karty od klikniętej w dół
-  getCards(id: number) {
+  getCardsBelow(id: number) {
     return this.cardsInColumn.slice(id);
   }
 
@@ -23,17 +23,32 @@ export class Column implements IColumn {
   getLastCard() {
     const colLength = this.cardsInColumn.length;
 
-    if(colLength > 0) {
+    if (colLength > 0) {
       return this.cardsInColumn[colLength - 1];
     }
-    
+
     return null;
   }
 
   // zwraca index klikniętej karty
   getCardId(data: ICards) {
     return this.cardsInColumn.findIndex(
-      (card) => card.dataset.color === data.color && parseFloat(card.dataset.value) === data.value
+      (card) =>
+        card.dataset.color === data.color &&
+        parseFloat(card.dataset.value) === data.value
     );
+  }
+
+  // porusza karty prawo-lewo w sekcji "dobór kart"
+  moveCards() {
+    let lastThree = this.getCardsBelow(0).slice(-3).reverse();
+    lastThree.forEach((elem, i) => {
+      elem.style.left = `${100 + i * 100}px`;
+      if (i == 0) {
+        elem.classList.add("moved");
+      } else {
+        elem.classList.remove("moved");
+      }
+    });
   }
 }

@@ -42,7 +42,8 @@
 
       .visible {
         background: transparent;
-        border-color: yellow;
+        /* border-color: yellow; */
+        border-color: black;
       }
 
 
@@ -50,6 +51,29 @@
       .hide {
         transform: translateX(-9999px);
       }
+
+      /* tu trafiają karty do gry */
+      .cards-box {
+        width: 50px;
+        height: 100px;
+        border: 2px solid green;
+        border-radius: 4px;
+        position: absolute;
+      }
+
+      /* element odpowiedzialny za powrót kart do doboru */
+      .repeat {
+        width: 20px;
+        height: 20px;
+        border: 10px solid green;
+        border-radius: 100%;
+        position: absolute;
+        top: 25px;
+        left: 0;
+      }
+
+
+
     </style>
   </head>
   <body>
