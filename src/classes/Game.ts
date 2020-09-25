@@ -5,24 +5,14 @@ import { IColumn } from "../interfaces/IColumn";
 
 export class Game implements IGame {
   private cards: ICards[] = [];
-  // public column = {
-  //   one: new Column(),
-  //   two: new Column(),
-  //   three: new Column(),
-  //   four: new Column(),
-  //   five: new Column(),
-  //   six: new Column(),
-  //   seven: new Column(),
-  // };
-  public columns = Array(9)
+  public columns = Array(13)
     .fill(null)
-    .map((e, i) => new Column(i));
-    // columna z indexem 8 i 9 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym leewym rogu
-
-  // liczba w nawiasach to numer kolumny
-  // public forSelection = new Column(10);
-  // public forSelectionNext = new Column(11);
-
+    .map((e, i) => {
+      if (i > 6 && i < 11) return new Column(i, "up"); // kolumny dla kart od asa w górę
+      return new Column(i, "down"); //reszta
+    });
+  // columny z indexami 11 i 12 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym lewym rogu
+  // columny z indexem  7 8 9 10 jest dla kart od asa w górę
 
   private getArray(): number[] {
     // returned aray = [0,1,2,3,4, ..., 13]
@@ -80,7 +70,7 @@ export class Game implements IGame {
     const cards = new DocumentFragment();
     const cardBoxes = new DocumentFragment();
 
-    const repeat = document.createElement("div")
+    const repeat = document.createElement("div");
     repeat.classList.add("repeat");
 
     let row = 7;
@@ -101,19 +91,19 @@ export class Game implements IGame {
       color.innerText = card.color;
       value.innerText = card.value.toString();
       //dodaje elementy do przetrzymywania kart
-      if(id < 7) {
+      if (id < 7) {
         const box = document.createElement("div");
         box.dataset.value = "13";
         box.classList.add("cards-box");
         box.classList.add("special");
-        
+
         box.style.top = `${145}px`;
         box.style.left = `${95 + id * 100}px`;
-        
+
         this.columns[id].addCard([box]);
         cardBoxes.append(box);
       }
-      
+
       cardDiv.classList.add("invisible");
       //te są dodawane do 'gry' reszta do 'doboru
       if (id < 28) {
@@ -141,26 +131,42 @@ export class Game implements IGame {
         }
       }
 
-      if(id > 27) {
+      if (id > 27) {
         cardDiv.classList.add("for-selection");
-        this.columns[7].addCard([cardDiv])
+        this.columns[11].addCard([cardDiv]);
       }
-
 
       cardDiv.append(color);
       cardDiv.append(value);
       cards.append(cardDiv);
     });
 
+    // tworzę columny dla kart od asa w górę
+    const doc = new DocumentFragment();
+
+    this.columns.slice(7, 11).forEach((col, i) => {
+      const index = col.columnNum;
+      const aAs = document.createElement("div");
+      // aAs.dataset.value = "13";
+      aAs.classList.add("above-as");
+      aAs.classList.add("special");
+
+      aAs.style.top = `${0}px`;
+      aAs.style.right = `${i * 100}px`;
+
+      this.columns[index].addCard([aAs]);
+      doc.append(aAs);
+    });
+
     container.append(repeat);
+    container.append(doc);
     container.append(cardBoxes);
     container.append(cards);
-    
   }
 
-  //czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
+  // czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
   // zwraca klikniętą kolumnę
   getColumn(data: ICards): IColumn {
-    return this.columns.find(col => col.getCardId(data) > -1);
+    return this.columns.find((col) => col.getCardId(data) > -1);
   }
 }

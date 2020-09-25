@@ -2,23 +2,16 @@ import { Column } from "./Column.js";
 export class Game {
     constructor() {
         this.cards = [];
-        // public column = {
-        //   one: new Column(),
-        //   two: new Column(),
-        //   three: new Column(),
-        //   four: new Column(),
-        //   five: new Column(),
-        //   six: new Column(),
-        //   seven: new Column(),
-        // };
-        this.columns = Array(9)
+        this.columns = Array(13)
             .fill(null)
-            .map((e, i) => new Column(i));
+            .map((e, i) => {
+            if (i > 6 && i < 11)
+                return new Column(i, "up"); // kolumny dla kart od asa w górę
+            return new Column(i, "down"); //reszta
+        });
     }
-    // columna z indexem 8 i 9 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym leewym rogu
-    // liczba w nawiasach to numer kolumny
-    // public forSelection = new Column(10);
-    // public forSelectionNext = new Column(11);
+    // columny z indexami 11 i 12 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym lewym rogu
+    // columny z indexem  7 8 9 10 jest dla kart od asa w górę
     getArray() {
         // returned aray = [0,1,2,3,4, ..., 13]
         return [...Array(13).keys()];
@@ -112,19 +105,33 @@ export class Game {
             }
             if (id > 27) {
                 cardDiv.classList.add("for-selection");
-                this.columns[7].addCard([cardDiv]);
+                this.columns[11].addCard([cardDiv]);
             }
             cardDiv.append(color);
             cardDiv.append(value);
             cards.append(cardDiv);
         });
+        // tworzę columny dla kart od asa w górę
+        const doc = new DocumentFragment();
+        this.columns.slice(7, 11).forEach((col, i) => {
+            const index = col.columnNum;
+            const aAs = document.createElement("div");
+            // aAs.dataset.value = "13";
+            aAs.classList.add("above-as");
+            aAs.classList.add("special");
+            aAs.style.top = `${0}px`;
+            aAs.style.right = `${i * 100}px`;
+            this.columns[index].addCard([aAs]);
+            doc.append(aAs);
+        });
         container.append(repeat);
+        container.append(doc);
         container.append(cardBoxes);
         container.append(cards);
     }
-    //czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
+    // czemu metoda nie chce przyjąć zwracanej wartości jako IColumn?
     // zwraca klikniętą kolumnę
     getColumn(data) {
-        return this.columns.find(col => col.getCardId(data) > -1);
+        return this.columns.find((col) => col.getCardId(data) > -1);
     }
 }

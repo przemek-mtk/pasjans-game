@@ -1,15 +1,16 @@
 export class Card {
     constructor(card) {
         this.card = card;
+        this.position = { x: 0, y: 0 };
     }
     // metoda do poruszania kartą
     move(e, position, index) {
-        this.card.style.zIndex = `${9999}`;
+        this.card.style.zIndex = "9999";
         this.card.style.top = e.clientY + position.y + 100 * index + "px";
         this.card.style.left = e.clientX + position.x + "px";
     }
     // metoda ustawiania karty w odpowiednim miejscu
-    // albo wraca spowrotem, albo londuje na karcie do której pasuje
+    // albo wraca z powrotem, albo ląduje na karcie do której pasuje
     moveTo() {
         this.card.style.zIndex = "10";
         this.card.style.top = this.position.y + "px";
@@ -20,63 +21,53 @@ export class Card {
         this.position = pos;
         return this;
     }
-    // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek rawędzią na kartę
+    // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek krawędzią na inną kartę
     checkBorders(card) {
         const { top, right, bottom, left } = this.card.getBoundingClientRect();
         if (card.top < bottom &&
             card.top > top &&
             card.left <= right &&
             card.left >= left) {
-            this.card.style.border = "2px solid #f0f";
+            // this.card.style.border = "2px solid #f0f";
             return true;
         }
         else if (card.top < bottom &&
             card.top > top &&
             card.right >= left &&
             card.right <= right) {
-            this.card.style.border = "2px solid #f0f";
+            // this.card.style.border = "2px solid #f0f";
             return true;
         }
         else if (card.bottom > top &&
             card.bottom < bottom &&
             card.right >= left &&
             card.right <= right) {
-            this.card.style.border = "2px solid #f0f";
+            // this.card.style.border = "2px solid #f0f";
             return true;
         }
         else if (card.bottom > top &&
             card.bottom < bottom &&
             card.left <= right &&
             card.left >= left) {
-            this.card.style.border = "2px solid #f0f";
+            // this.card.style.border = "2px solid #f0f";
             return true;
         }
         else {
-            this.card.style.border = "2px solid red";
+            // this.card.style.border = "2px solid red";
             return false;
         }
     }
-    // sprawdza czy karta najechała an inną kartę i na miejsce "specjalne" czylli box na którym leżą karty
-    checkIfFits(elem) {
+    // sprawdza czy karta najechała na inną kartę | miejsce specjalne 
+    // porównuje jej wartość z wartością jakiej oczekuje kolumna
+    checkIfFits(elem, column) {
         if (this.checkBorders(elem.getBoundingClientRect())) {
-            const color = elem.dataset.color; //pik, trefl || kier, karo
+            const color = elem.dataset.color;
             const value = parseFloat(elem.dataset.value);
-            let rightColor;
-            if (this.card.classList.contains("special")) {
-                rightColor = ["kier", "karo", "pik", "trefl"];
+            if (column.nextCard.colors.includes(color) &&
+                column.nextCard.value === value) {
+                return elem;
             }
-            else {
-                rightColor =
-                    this.card.dataset.color === "pik" ||
-                        this.card.dataset.color === "trefl"
-                        ? ["kier", "karo"]
-                        : ["pik", "trefl"];
-            }
-            return rightColor.includes(color) &&
-                value === parseFloat(this.card.dataset.value) - 1
-                ? true
-                : false;
+            return;
         }
-        return false;
     }
 }

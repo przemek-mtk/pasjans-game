@@ -1,19 +1,20 @@
-import { ICard } from "../interfaces/ICard";
+import { ICard, IPosition } from "../interfaces/ICard";
+import { IColumn } from "../interfaces/IColumn";
 
 export class Card implements ICard {
-  private position: { x: number; y: number };
+  private position: IPosition = { x: 0, y: 0 };
 
-  constructor(private card: HTMLDivElement) {}
+  constructor(private readonly card: HTMLDivElement) {}
 
   // metoda do poruszania kartą
-  move(e: Event, position: { x: number; y: number }, index: number) {
-    this.card.style.zIndex = `${9999}`;
+  move(e: MouseEvent, position: IPosition, index: number) {
+    this.card.style.zIndex = "9999";
     this.card.style.top = e.clientY + position.y + 100 * index + "px";
     this.card.style.left = e.clientX + position.x + "px";
   }
 
   // metoda ustawiania karty w odpowiednim miejscu
-  // albo wraca spowrotem, albo londuje na karcie do której pasuje
+  // albo wraca z powrotem, albo ląduje na karcie do której pasuje
   moveTo() {
     this.card.style.zIndex = "10";
     this.card.style.top = this.position.y + "px";
@@ -21,12 +22,12 @@ export class Card implements ICard {
   }
 
   //ustawienie odpowiedniej pozycji dla karty
-  setPosition(pos: { x: number; y: number }) {
+  setPosition(pos: IPosition) {
     this.position = pos;
     return this;
   }
 
-  // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek rawędzią na kartę
+  // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek krawędzią na inną kartę
   private checkBorders(card: {
     top: number;
     right: number;
@@ -41,7 +42,7 @@ export class Card implements ICard {
       card.left <= right &&
       card.left >= left
     ) {
-      this.card.style.border = "2px solid #f0f";
+      // this.card.style.border = "2px solid #f0f";
       return true;
     } else if (
       card.top < bottom &&
@@ -49,7 +50,7 @@ export class Card implements ICard {
       card.right >= left &&
       card.right <= right
     ) {
-      this.card.style.border = "2px solid #f0f";
+      // this.card.style.border = "2px solid #f0f";
       return true;
     } else if (
       card.bottom > top &&
@@ -57,7 +58,7 @@ export class Card implements ICard {
       card.right >= left &&
       card.right <= right
     ) {
-      this.card.style.border = "2px solid #f0f";
+      // this.card.style.border = "2px solid #f0f";
       return true;
     } else if (
       card.bottom > top &&
@@ -65,36 +66,29 @@ export class Card implements ICard {
       card.left <= right &&
       card.left >= left
     ) {
-      this.card.style.border = "2px solid #f0f";
+      // this.card.style.border = "2px solid #f0f";
       return true;
     } else {
-      this.card.style.border = "2px solid red";
+      // this.card.style.border = "2px solid red";
       return false;
     }
   }
 
-  // sprawdza czy karta najechała an inną kartę i na miejsce "specjalne" czylli box na którym leżą karty
-  checkIfFits(elem: HTMLDivElement) {
+  // sprawdza czy karta najechała na inną kartę | miejsce specjalne 
+  // porównuje jej wartość z wartością jakiej oczekuje kolumna
+  checkIfFits(elem: HTMLDivElement, column: IColumn) {
     if (this.checkBorders(elem.getBoundingClientRect())) {
-      const color = elem.dataset.color; //pik, trefl || kier, karo
-      const value = parseFloat(elem.dataset.value);
-      let rightColor;
-      if (this.card.classList.contains("special")) {
-        rightColor = ["kier", "karo", "pik", "trefl"];
-      } else {
-        rightColor =
-          this.card.dataset.color === "pik" ||
-          this.card.dataset.color === "trefl"
-            ? ["kier", "karo"]
-            : ["pik", "trefl"];
+      const color = elem.dataset.color!;
+      const value = parseFloat(elem.dataset.value!);
+
+      if (
+        column.nextCard.colors.includes(color) &&
+        column.nextCard.value === value
+      ) {
+        return elem;
       }
 
-      return rightColor.includes(color) &&
-        value === parseFloat(this.card.dataset.value) - 1
-        ? true
-        : false;
+      return;
     }
-
-    return false;
   }
 }

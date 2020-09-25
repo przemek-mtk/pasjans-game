@@ -1,13 +1,59 @@
 export class Column {
-    constructor(columnNum) {
+    constructor(columnNum, direction) {
         this.columnNum = columnNum;
+        this.direction = direction;
         this.cardsInColumn = [];
+        this.nextCard = {
+            colors: ["kier", "karo", "pik", "trefl"],
+            value: 0
+        };
     }
     addCard(card) {
         this.cardsInColumn = this.cardsInColumn.concat(card);
+        const lastCard = this.getLastCard();
+        // ustawienie od Asa w górę
+        if (this.direction === "up") {
+            if (this.cardsInColumn.length === 2) {
+                this.nextCard.colors = [lastCard.dataset.color];
+                this.nextCard.value = this.nextCard.value + 1;
+            }
+            else if (this.cardsInColumn.length > 1) {
+                this.nextCard.value = this.nextCard.value + 1;
+            }
+        }
+        else {
+            if ((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "pik" || (lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "trefl") {
+                this.nextCard.colors = ["kier", "karo"];
+            }
+            else {
+                this.nextCard.colors = ["pik", "trefl"];
+            }
+            this.nextCard.value = parseFloat((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.value) - 1);
+        }
     }
     removeCards(id) {
         this.cardsInColumn.splice(id);
+        const lastCard = this.getLastCard();
+        if (this.direction === "up") {
+            // if(this.nextCard.colors.length) {
+            // this.nextCard.colors.push(lastCard.dataset.color);
+            // }
+            this.nextCard.value = parseFloat(lastCard.dataset.value - 1);
+        }
+        else {
+            if (this.cardsInColumn.length === 1) {
+                this.nextCard.colors = ["kier", "karo", "pik", "trefl"];
+            }
+            else {
+                if ((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "pik" || (lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "trefl") {
+                    this.nextCard.colors = ["kier", "karo"];
+                }
+                else {
+                    this.nextCard.colors = ["pik", "trefl"];
+                }
+            }
+            this.nextCard.value = parseFloat((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.value) - 1);
+        }
     }
     // zwraca karty od klikniętej w dół
     getCardsBelow(id) {
