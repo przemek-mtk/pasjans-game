@@ -1,7 +1,8 @@
-import { ICard } from "./ICard";
+import { ICards } from "./ICards";
 import { IColumn } from "./IColumn";
 
 export interface IGame {
+  columns: IColumn[];
   startGame(): void;
-  getColumn(data: ICard): IColumn;
+  getColumn(data: ICards): IColumn | undefined
 }

@@ -5,55 +5,40 @@ export class Column {
         this.cardsInColumn = [];
         this.nextCard = {
             colors: ["kier", "karo", "pik", "trefl"],
-            value: 0
+            value: 0,
         };
     }
-    addCard(card) {
-        this.cardsInColumn = this.cardsInColumn.concat(card);
+    // ustala jaka jest będzie następna karta
+    setNextCard() {
         const lastCard = this.getLastCard();
-        // ustawienie od Asa w górę
-        if (this.direction === "up") {
-            if (this.cardsInColumn.length === 2) {
+        let blackColor = ["pik", "trefl"];
+        let redColor = ["kier", "karo"];
+        if (this.cardsInColumn.length === 1) {
+            this.nextCard.colors = blackColor.concat(redColor);
+            this.nextCard.value = this.direction === "up" ? 0 : 12;
+        }
+        else {
+            if (this.direction === "up") {
                 this.nextCard.colors = [lastCard.dataset.color];
                 this.nextCard.value = this.nextCard.value + 1;
             }
-            else if (this.cardsInColumn.length > 1) {
-                this.nextCard.value = this.nextCard.value + 1;
-            }
-        }
-        else {
-            if ((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "pik" || (lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "trefl") {
-                this.nextCard.colors = ["kier", "karo"];
-            }
             else {
-                this.nextCard.colors = ["pik", "trefl"];
+                this.nextCard.colors = blackColor.includes(lastCard.dataset.color)
+                    ? redColor
+                    : blackColor;
+                this.nextCard.value = parseFloat(lastCard.dataset.value) - 1;
             }
-            this.nextCard.value = parseFloat((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.value) - 1);
         }
+    }
+    addCard(card) {
+        this.cardsInColumn = this.cardsInColumn.concat(card);
+        // ustalam jaka będzie następna karta
+        this.setNextCard();
     }
     removeCards(id) {
         this.cardsInColumn.splice(id);
-        const lastCard = this.getLastCard();
-        if (this.direction === "up") {
-            // if(this.nextCard.colors.length) {
-            // this.nextCard.colors.push(lastCard.dataset.color);
-            // }
-            this.nextCard.value = parseFloat(lastCard.dataset.value - 1);
-        }
-        else {
-            if (this.cardsInColumn.length === 1) {
-                this.nextCard.colors = ["kier", "karo", "pik", "trefl"];
-            }
-            else {
-                if ((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "pik" || (lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.color) === "trefl") {
-                    this.nextCard.colors = ["kier", "karo"];
-                }
-                else {
-                    this.nextCard.colors = ["pik", "trefl"];
-                }
-            }
-            this.nextCard.value = parseFloat((lastCard === null || lastCard === void 0 ? void 0 : lastCard.dataset.value) - 1);
-        }
+        // ustalam jaka będzie następna karta
+        this.setNextCard();
     }
     // zwraca karty od klikniętej w dół
     getCardsBelow(id) {
@@ -78,6 +63,7 @@ export class Column {
         lastThree.forEach((elem, i) => {
             elem.style.left = `${100 + i * 100}px`;
             if (i == 0) {
+                // pozwala na przeniesienie karty
                 elem.classList.add("moved");
             }
             else {

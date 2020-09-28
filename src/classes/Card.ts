@@ -74,16 +74,15 @@ export class Card implements ICard {
     }
   }
 
-  // sprawdza czy karta najechała na inną kartę | miejsce specjalne 
+  // sprawdza czy karta najechała na inną kartę | miejsce specjalne
   // porównuje jej wartość z wartością jakiej oczekuje kolumna
   checkIfFits(elem: HTMLDivElement, column: IColumn) {
     if (this.checkBorders(elem.getBoundingClientRect())) {
-      const color = elem.dataset.color!;
-      const value = parseFloat(elem.dataset.value!);
+      const { color, value } = elem.dataset;
 
       if (
-        column.nextCard.colors.includes(color) &&
-        column.nextCard.value === value
+        column.nextCard.colors.includes(color!) &&
+        column.nextCard.value === parseFloat(value!)
       ) {
         return elem;
       }

@@ -57,14 +57,13 @@ export class Card {
             return false;
         }
     }
-    // sprawdza czy karta najechała na inną kartę | miejsce specjalne 
+    // sprawdza czy karta najechała na inną kartę | miejsce specjalne
     // porównuje jej wartość z wartością jakiej oczekuje kolumna
     checkIfFits(elem, column) {
         if (this.checkBorders(elem.getBoundingClientRect())) {
-            const color = elem.dataset.color;
-            const value = parseFloat(elem.dataset.value);
+            const { color, value } = elem.dataset;
             if (column.nextCard.colors.includes(color) &&
-                column.nextCard.value === value) {
+                column.nextCard.value === parseFloat(value)) {
                 return elem;
             }
             return;
