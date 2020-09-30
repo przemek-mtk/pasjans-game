@@ -14,9 +14,17 @@ export class Movements {
         this.movements = 0;
     }
     // zwiększam ilosć ruchów
-    increaseState() {
+    incrementState() {
         this.movements += 1;
-        // this.container.textContent = "Moves: " +  this.movements.toString();
         this.setMovementsContext();
+    }
+    decrementState() {
+        if (this.movements > 0) {
+            this.movements -= 1;
+            this.setMovementsContext();
+        }
+    }
+    getMovements() {
+        return this.movements;
     }
 }

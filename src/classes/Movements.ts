@@ -4,7 +4,7 @@ export class Movements implements IMovements {
   // licznik wykonanych ruchów
   private movements: number = 0;
 
-  constructor(public container: HTMLDivElement) {
+  constructor(private container: HTMLDivElement) {
     this.setMovementsContext();
   }
 
@@ -17,9 +17,19 @@ export class Movements implements IMovements {
     this.movements = 0;
   }
   // zwiększam ilosć ruchów
-  increaseState() {
+  incrementState() {
     this.movements += 1;
-    // this.container.textContent = "Moves: " +  this.movements.toString();
     this.setMovementsContext();
+  }
+
+  decrementState() {
+    if (this.movements > 0) {
+      this.movements -= 1;
+      this.setMovementsContext();
+    }
+  }
+
+  getMovements() {
+    return this.movements;
   }
 }

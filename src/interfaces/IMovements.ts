@@ -1,5 +1,6 @@
 export interface IMovements {
-  container: HTMLDivElement;
   resetState(): void;
-  increaseState(): void;
+  incrementState(): void;
+  decrementState(): void;
+  getMovements(): number;
 }

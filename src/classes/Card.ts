@@ -2,23 +2,41 @@ import { ICard, IPosition } from "../interfaces/ICard";
 import { IColumn } from "../interfaces/IColumn";
 
 export class Card implements ICard {
-  private position: IPosition = { x: 0, y: 0 };
+  public position: IPosition = { x: 0, y: 0 };
 
-  constructor(private readonly card: HTMLDivElement) {}
+  constructor(
+    public readonly element: HTMLDivElement,
+    public color: string,
+    public value: number,
+    public columnId: number,
+    public idInColumn: number,
+    public isVisible: boolean = false,
+    public isMoved: boolean = false,
+    // public isLast: boolean = false
+  ) {
+    if(this.isVisible) {
+      this.element.classList.add("visible", "moved");
+      this.element.classList.remove("invisible");
+    } else {
+      this.element.classList.add("invisible");
+      this.element.classList.remove("visible", "moved");
+    }
+    // this.moveTo();
+  }
 
   // metoda do poruszania kartą
   move(e: MouseEvent, position: IPosition, index: number) {
-    this.card.style.zIndex = "9999";
-    this.card.style.top = e.clientY + position.y + 100 * index + "px";
-    this.card.style.left = e.clientX + position.x + "px";
+    this.element.style.zIndex = "9999";
+    this.element.style.top = e.clientY + position.y + 100 * index + "px";
+    this.element.style.left = e.clientX + position.x + "px";
   }
 
   // metoda ustawiania karty w odpowiednim miejscu
   // albo wraca z powrotem, albo ląduje na karcie do której pasuje
   moveTo() {
-    this.card.style.zIndex = "10";
-    this.card.style.top = this.position.y + "px";
-    this.card.style.left = this.position.x + "px";
+    this.element.style.zIndex = "10"; 
+    this.element.style.top = this.position.y + "px";
+    this.element.style.left = this.position.x + "px";
   }
 
   //ustawienie odpowiedniej pozycji dla karty
@@ -34,7 +52,7 @@ export class Card implements ICard {
     bottom: number;
     left: number;
   }) {
-    const { top, right, bottom, left } = this.card.getBoundingClientRect();
+    const { top, right, bottom, left } = this.element.getBoundingClientRect();
 
     if (
       card.top < bottom &&
@@ -77,6 +95,7 @@ export class Card implements ICard {
   // sprawdza czy karta najechała na inną kartę | miejsce specjalne
   // porównuje jej wartość z wartością jakiej oczekuje kolumna
   checkIfFits(elem: HTMLDivElement, column: IColumn) {
+
     if (this.checkBorders(elem.getBoundingClientRect())) {
       const { color, value } = elem.dataset;
 
@@ -89,5 +108,35 @@ export class Card implements ICard {
 
       return;
     }
+  }
+
+  // nowe metody:::
+  // render() {
+  //   let pos = {
+  //     x: this.columnId < 12 ? 100 + this.columnId * 100 : 0,
+  //     y: this.columnId < 12 ? 150 + this.idInColumn * 100 : 0,
+  //   };
+  //   this.setPosition(pos);
+  //   this.moveTo();
+  // }
+
+  changeColumnId(collumnId: number) {
+    this.columnId = collumnId;
+  }
+
+  changeIdInColumn(id: number) {
+    this.idInColumn = id;
+  }
+
+  //   NIE WIME CZY POTRZEBUJE ISLAST !!!!
+  // setIsLast(value: boolean) {
+  //   this.isLast = value;
+  // }
+
+  
+  setIsVisible() {
+    this.isVisible = true;
+    this.element.classList.add("visible", "moved");
+    this.element.classList.remove("invisible");
   }
 }
