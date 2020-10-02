@@ -2,34 +2,34 @@ import { IMovements } from "../interfaces/IMovements";
 
 export class Movements implements IMovements {
   // licznik wykonanych ruchów
-  private movements: number = 0;
+  private _movements: number = 0;
 
   constructor(private container: HTMLDivElement) {
-    this.setMovementsContext();
+    this._setMovementsContext();
   }
 
   //odpowiada za zmianę zawartości div#movments
-  private setMovementsContext() {
-    this.container.textContent = "Moves: " + this.movements.toString();
+  private _setMovementsContext() {
+    this.container.textContent = "Moves: " + this._movements.toString();
   }
   // resetuje przy nowej grze
   resetState() {
-    this.movements = 0;
+    this._movements = 0;
   }
   // zwiększam ilosć ruchów
   incrementState() {
-    this.movements += 1;
-    this.setMovementsContext();
+    this._movements += 1;
+    this._setMovementsContext();
   }
 
   decrementState() {
-    if (this.movements > 0) {
-      this.movements -= 1;
-      this.setMovementsContext();
+    if (this._movements > 0) {
+      this._movements -= 1;
+      this._setMovementsContext();
     }
   }
 
   getMovements() {
-    return this.movements;
+    return this._movements;
   }
 }

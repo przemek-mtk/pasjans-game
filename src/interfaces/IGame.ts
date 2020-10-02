@@ -6,7 +6,7 @@ export interface IGame {
   columns: IColumn[];
   startGame(): void;
   //czy get cards jest potrzebne??
-  getCards(): ICard[];
+  // getCards(): ICard[];
   getColumn(data: ICards): IColumn | undefined;
   setObjectInColums(
     columns: IColumn[]
@@ -23,4 +23,5 @@ export interface IGame {
   }[][];
   getHistory(key: number): void;
   setHistory(key: number): void;
+  findCard(element: HTMLDivElement): ICard;
 }

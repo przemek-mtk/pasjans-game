@@ -1,5 +1,6 @@
 import { ICard, IPosition } from "../interfaces/ICard";
 import { IColumn } from "../interfaces/IColumn";
+import { ICards } from "../interfaces/ICards";
 
 export class Card implements ICard {
   public position: IPosition = { x: 0, y: 0 };
@@ -11,16 +12,11 @@ export class Card implements ICard {
     public columnId: number,
     public idInColumn: number,
     public isVisible: boolean = false,
-    public isMoved: boolean = false,
-    // public isLast: boolean = false
-  ) {
-    if(this.isVisible) {
-      this.element.classList.add("visible", "moved");
-      this.element.classList.remove("invisible");
-    } else {
-      this.element.classList.add("invisible");
-      this.element.classList.remove("visible", "moved");
-    }
+    public isMoved: boolean = false
+  ) // public isLast: boolean = false
+  {
+    
+    this.setIsVisible(this.isVisible)
     // this.moveTo();
   }
 
@@ -34,7 +30,7 @@ export class Card implements ICard {
   // metoda ustawiania karty w odpowiednim miejscu
   // albo wraca z powrotem, albo ląduje na karcie do której pasuje
   moveTo() {
-    this.element.style.zIndex = "10"; 
+    this.element.style.zIndex = "10";
     this.element.style.top = this.position.y + "px";
     this.element.style.left = this.position.x + "px";
   }
@@ -46,7 +42,7 @@ export class Card implements ICard {
   }
 
   // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek krawędzią na inną kartę
-  private checkBorders(card: {
+  private _checkBorders(card: {
     top: number;
     right: number;
     bottom: number;
@@ -94,14 +90,13 @@ export class Card implements ICard {
 
   // sprawdza czy karta najechała na inną kartę | miejsce specjalne
   // porównuje jej wartość z wartością jakiej oczekuje kolumna
-  checkIfFits(elem: HTMLDivElement, column: IColumn) {
-
-    if (this.checkBorders(elem.getBoundingClientRect())) {
-      const { color, value } = elem.dataset;
+  checkIfFits(elem: ICard, column: IColumn) {
+    if (this._checkBorders(elem.element.getBoundingClientRect())) {
+      const { color, value } = elem;
 
       if (
         column.nextCard.colors.includes(color!) &&
-        column.nextCard.value === parseFloat(value!)
+        column.nextCard.value === value
       ) {
         return elem;
       }
@@ -133,10 +128,14 @@ export class Card implements ICard {
   //   this.isLast = value;
   // }
 
-  
-  setIsVisible() {
-    this.isVisible = true;
-    this.element.classList.add("visible", "moved");
-    this.element.classList.remove("invisible");
+  setIsVisible(value: boolean) {
+    this.isVisible = value;
+    if (value) {
+      this.element.classList.add("visible", "moved");
+      this.element.classList.remove("invisible");
+    } else {
+      this.element.classList.add("invisible");
+      this.element.classList.remove("visible", "moved");
+    }
   }
 }

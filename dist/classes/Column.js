@@ -1,3 +1,4 @@
+import { Card } from "./Card.js";
 export class Column {
     constructor(columnNum, direction) {
         this.columnNum = columnNum;
@@ -10,7 +11,7 @@ export class Column {
         };
     }
     // ustala jaka jest będzie następna karta
-    setNextCard() {
+    _setNextCard() {
         const lastCard = this.getLastCard(); // as HTMLDivElement;
         let blackColor = ["pik", "trefl"];
         let redColor = ["kier", "karo"];
@@ -33,14 +34,22 @@ export class Column {
         }
     }
     addCard(card) {
+        // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
+        card.forEach((c, i) => {
+            if (c instanceof Card) {
+                c.changeColumnId(this.columnNum);
+                c.changeIdInColumn(this.cardsInColumn.length + i);
+            }
+        });
+        //dodaje karty do kolumny
         this.cardsInColumn = this.cardsInColumn.concat(card);
         // ustalam jaka będzie następna karta
-        this.setNextCard();
+        this._setNextCard();
     }
     removeCards(id) {
         this.cardsInColumn.splice(id);
         // ustalam jaka będzie następna karta
-        this.setNextCard();
+        this._setNextCard();
     }
     // zwraca karty od klikniętej w dół
     getCardsBelow(id) {
@@ -54,6 +63,9 @@ export class Column {
         }
         return null;
     }
+    getFirstCard() {
+        return this.cardsInColumn[0];
+    }
     // zwraca index klikniętej karty
     getCardId(data) {
         return this.cardsInColumn.findIndex((card) => card.color === data.color && parseFloat(card.value) === data.value);
@@ -64,16 +76,7 @@ export class Column {
         lastThree.forEach((elem, i) => {
             // elem.element.style.left = `${100 + i * 100}px`;
             let pos = { x: 100 + i * 100, y: 0 };
-            elem.setPosition(pos);
-            elem.moveTo();
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // to jest do poprawy jak najbardziej!!!
-            // JAK COFAM NIE MOGĘ RUSZYĆ KARTĄ!!
+            elem.setPosition(pos).moveTo();
             if (i == 0) {
                 // pozwala na przeniesienie karty
                 elem.element.classList.add("moved");

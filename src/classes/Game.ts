@@ -10,7 +10,7 @@ enum ColumnNum {
 }
 
 export class Game implements IGame {
-  private cards: ICard[] = [];
+  private _cards: ICard[] = [];
   public columns = Array(13)
     .fill(null)
     .map((e, i) => {
@@ -21,19 +21,19 @@ export class Game implements IGame {
   // columny z indexem  7-10 są dla kart od asa w górę
 
   // property dla cofania
-  private historyOfMovements = new Map();
+  private _historyOfMovements = new Map();
   // private history = {};
 
   // zwraca [0,1,2,3,4, ..., 13]
-  private getArray(): number[] {
+  private _getArray(): number[] {
     return [...Array(13).keys()];
   }
   // losowa liczba <min, max>
-  private randomMinMax(min: number, max: number): number {
+  private _randomMinMax(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
   // zwraca tablicę 52 obiektów [{color: "", value: (random)},  ....]
-  private randomCards(): ICards[] {
+  private _randomCards(): ICards[] {
     let color: string[] = ["pik", "trefl", "karo", "kier"];
     let cards: {
       [key: string]: number[];
@@ -42,18 +42,21 @@ export class Game implements IGame {
       karo: number[];
       kier: number[];
     } = {
-      pik: this.getArray(),
-      trefl: this.getArray(),
-      karo: this.getArray(),
-      kier: this.getArray(),
+      pik: this._getArray(),
+      trefl: this._getArray(),
+      karo: this._getArray(),
+      kier: this._getArray(),
     };
 
     return Array(52)
       .fill(null)
       .map((e) => {
-        let idColor: number = this.randomMinMax(0, color.length - 1);
+        let idColor: number = this._randomMinMax(0, color.length - 1);
         let cardColor: string = color[idColor];
-        let idValue: number = this.randomMinMax(0, cards[cardColor].length - 1);
+        let idValue: number = this._randomMinMax(
+          0,
+          cards[cardColor].length - 1
+        );
         let valueCard: number[] = cards[cardColor].splice(idValue, 1);
 
         if (cards[cardColor].length === 0) {
@@ -74,7 +77,7 @@ export class Game implements IGame {
       });
   }
   // dodaje elementy do przetrzymywania kart
-  private addCardBoxesElements() {
+  private _addCardBoxesElements() {
     const cardBoxes = new DocumentFragment();
 
     for (let i = 0; i < 7; i++) {
@@ -86,6 +89,12 @@ export class Game implements IGame {
 
       const boxForCards = {
         element: box,
+        position: {
+          x: 95 + i * 100,
+          y: 145,
+        },
+        isSpecial: true,
+        // direction: "down"
         // color: "all",
         // value: 13
       };
@@ -97,7 +106,7 @@ export class Game implements IGame {
     return cardBoxes;
   }
   // tworzę elementy dla kart od asa w górę
-  private addAceUpBoxElements() {
+  private _addAceUpBoxElements() {
     const aceUpBoxes = new DocumentFragment();
 
     this.columns
@@ -109,10 +118,16 @@ export class Game implements IGame {
         aAs.classList.add("above-as", "special");
 
         aAs.style.top = `${0}px`;
-        aAs.style.right = `${i * 100}px`;
+        aAs.style.left = `${400 + i * 100}px`;
 
         const aAsBox = {
           element: aAs,
+          position: {
+            x: 400 + i * 100,
+            y: 0,
+          },
+          isSpecial: true,
+          // direction: "up"
         };
 
         this.columns[index].addCard([aAsBox]);
@@ -122,14 +137,14 @@ export class Game implements IGame {
     return aceUpBoxes;
   }
   // tworzę i dodaje elementy reprezentujące karty
-  private addCards() {
+  private _addCards() {
     const cards = new DocumentFragment();
     let column = 7;
     let lastIdInRow = 0;
     let row = 0;
 
     // rozdanie kart na tą rundę
-    const deal = this.randomCards();
+    const deal = this._randomCards();
     let columnId, idInColumn, isVisible, isMoved, isLast;
 
     // this.cards =
@@ -179,10 +194,10 @@ export class Game implements IGame {
           columnId,
           idInColumn,
           isVisible,
-          isMoved,
+          isMoved
           // isLast
         );
-        card.setPosition({ x: left + 100, y: top + 150 });
+        card.setPosition({ x: left + 100, y: top + 150 }).moveTo();
         this.columns[indexColumn].addCard([card]);
 
         if ((id - lastIdInRow) % column === column - 1 && column > 1) {
@@ -192,7 +207,7 @@ export class Game implements IGame {
         }
       } else {
         cardContainer.classList.add("for-selection");
-        columnId = 12;
+        columnId = 11;
         idInColumn = 0;
         card = new Card(
           cardContainer,
@@ -201,15 +216,15 @@ export class Game implements IGame {
           columnId,
           idInColumn,
           false,
-          false,
+          false
           // false
         );
-        card.setPosition({ x: 0, y: 0 });
+        card.setPosition({ x: 0, y: 0 }).moveTo();
         this.columns[ColumnNum.ForSelection].addCard([card]);
         // isVisible = false;
       }
 
-      this.cards.push(card);
+      this._cards.push(card);
 
       cardContainer.append(cColor);
       cardContainer.append(cValue);
@@ -224,19 +239,15 @@ export class Game implements IGame {
 
     const container = document.querySelector("#container")!;
 
-    const cardBoxes = this.addCardBoxesElements();
-    const aceUpBoxes = this.addAceUpBoxElements();
-    const cards = this.addCards();
+    const cardBoxes = this._addCardBoxesElements();
+    const aceUpBoxes = this._addAceUpBoxElements();
+    const cards = this._addCards();
 
     container.append(aceUpBoxes);
     container.append(cardBoxes);
     container.append(cards);
   }
 
-  // TEST TEST TEST TEST TEST TEST TEST TEST
-  getCards() {
-    return this.cards;
-  }
 
   // zwraca klikniętą kolumnę
   getColumn(data: ICards) {
@@ -254,26 +265,30 @@ export class Game implements IGame {
 
   setHistory(key: number) {
     const value = this.setObjectInColums(this.columns);
-    this.historyOfMovements.set(key, value);
+    this._historyOfMovements.set(key, value);
 
     console.log("zapisuje pod kluczem:::", key, value);
   }
 
   getHistory(key: number) {
     if (key >= 0) {
-      const prevMovement: {
-        element: HTMLDivElement;
-        color: string;
-        value: number;
-        columnId: number;
-        idInColumn: number;
-        isVisible: boolean;
-        isMoved: boolean;
-        isLast: boolean;
-        position: { x: number; y: number };
-      }[][] = this.historyOfMovements.get(key);
+      const prevMovement: // {
+      //   element: HTMLDivElement;
+      //   color: string;
+      //   value: number;
+      //   columnId: number;
+      //   idInColumn: number;
+      //   isVisible: boolean;
+      //   isMoved: boolean;
+      //   isLast: boolean;
+      //   position: { x: number; y: number };
+      // }
+      ICards[][] = this._historyOfMovements.get(key);
 
       console.log("KEYYYYYYYYYYYYYYYYYYYYYYYY:", prevMovement, key);
+      //nadpisuje wartość dla tis._cards
+      this._cards = [];
+      
       // czyszcze kolumny
       this.columns.forEach((col, id) => {
         // wszystkie kolumny które mają dodatkowy element
@@ -294,13 +309,15 @@ export class Game implements IGame {
             elem.columnId,
             elem.idInColumn,
             elem.isVisible,
-            elem.isMoved,
+            elem.isMoved
             // elem.isLast
           );
 
-          newCard.setPosition(elem.position);
-          newCard.moveTo();
+
+          newCard.setPosition(elem.position).moveTo();
           this.columns[elem.columnId].addCard([newCard]);
+          this._cards.push(newCard);
+
         });
       });
     } else {
@@ -308,5 +325,9 @@ export class Game implements IGame {
     }
 
     console.log("TO DOSTAJE Z POWROTEM :::: ", this.columns);
+  }
+
+  findCard(element: HTMLDivElement) {
+    return this._cards.find((c) => c.element === element);
   }
 }

@@ -2,29 +2,29 @@ export class Movements {
     constructor(container) {
         this.container = container;
         // licznik wykonanych ruchów
-        this.movements = 0;
-        this.setMovementsContext();
+        this._movements = 0;
+        this._setMovementsContext();
     }
     //odpowiada za zmianę zawartości div#movments
-    setMovementsContext() {
-        this.container.textContent = "Moves: " + this.movements.toString();
+    _setMovementsContext() {
+        this.container.textContent = "Moves: " + this._movements.toString();
     }
     // resetuje przy nowej grze
     resetState() {
-        this.movements = 0;
+        this._movements = 0;
     }
     // zwiększam ilosć ruchów
     incrementState() {
-        this.movements += 1;
-        this.setMovementsContext();
+        this._movements += 1;
+        this._setMovementsContext();
     }
     decrementState() {
-        if (this.movements > 0) {
-            this.movements -= 1;
-            this.setMovementsContext();
+        if (this._movements > 0) {
+            this._movements -= 1;
+            this._setMovementsContext();
         }
     }
     getMovements() {
-        return this.movements;
+        return this._movements;
     }
 }

@@ -1,18 +1,18 @@
 export class Timer {
     constructor(container) {
         this.container = container;
-        this.seconds = 0;
-        this.setTimerContext();
+        this._seconds = 0;
+        this._setTimerContext();
     }
     // odpowiada za poprawne wyświetlenie czasu
-    setTimerContext() {
-        let min = Math.floor((this.seconds % 3600) / 60);
-        let sec = this.seconds % 60;
+    _setTimerContext() {
+        let min = Math.floor((this._seconds % 3600) / 60);
+        let sec = this._seconds % 60;
         let hours = 0;
         min = min < 10 ? "0" + min : min;
         sec = sec < 10 ? "0" + sec : sec;
-        if (this.seconds >= 3600) {
-            hours = Math.floor(this.seconds / 3600);
+        if (this._seconds >= 3600) {
+            hours = Math.floor(this._seconds / 3600);
             hours = hours < 10 ? "0" + hours : hours;
             this.container.textContent = `Time: ${hours}:${min}:${sec}`;
         }
@@ -22,16 +22,16 @@ export class Timer {
     }
     // start zegara
     startTimer() {
-        this.timer = setInterval(() => {
-            this.seconds += 1;
-            this.setTimerContext();
+        this._timer = setInterval(() => {
+            this._seconds += 1;
+            this._setTimerContext();
         }, 1000);
     }
     // reset zegara przy "new game"
     resetTimer() {
-        clearInterval(this.timer);
-        this.seconds = 0;
-        this.setTimerContext();
+        clearInterval(this._timer);
+        this._seconds = 0;
+        this._setTimerContext();
         this.startTimer();
     }
 }

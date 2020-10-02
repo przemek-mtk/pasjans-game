@@ -8,14 +8,7 @@ export class Card {
         this.isVisible = isVisible;
         this.isMoved = isMoved;
         this.position = { x: 0, y: 0 };
-        if (this.isVisible) {
-            this.element.classList.add("visible", "moved");
-            this.element.classList.remove("invisible");
-        }
-        else {
-            this.element.classList.add("invisible");
-            this.element.classList.remove("visible", "moved");
-        }
+        this.setIsVisible(this.isVisible);
         // this.moveTo();
     }
     // metoda do poruszania kartą
@@ -37,7 +30,7 @@ export class Card {
         return this;
     }
     // metoda sprawdza czy puszczona karta ("mouseup") najechała jakokolwiek krawędzią na inną kartę
-    checkBorders(card) {
+    _checkBorders(card) {
         const { top, right, bottom, left } = this.element.getBoundingClientRect();
         if (card.top < bottom &&
             card.top > top &&
@@ -75,10 +68,10 @@ export class Card {
     // sprawdza czy karta najechała na inną kartę | miejsce specjalne
     // porównuje jej wartość z wartością jakiej oczekuje kolumna
     checkIfFits(elem, column) {
-        if (this.checkBorders(elem.getBoundingClientRect())) {
-            const { color, value } = elem.dataset;
+        if (this._checkBorders(elem.element.getBoundingClientRect())) {
+            const { color, value } = elem;
             if (column.nextCard.colors.includes(color) &&
-                column.nextCard.value === parseFloat(value)) {
+                column.nextCard.value === value) {
                 return elem;
             }
             return;
@@ -103,9 +96,15 @@ export class Card {
     // setIsLast(value: boolean) {
     //   this.isLast = value;
     // }
-    setIsVisible() {
-        this.isVisible = true;
-        this.element.classList.add("visible", "moved");
-        this.element.classList.remove("invisible");
+    setIsVisible(value) {
+        this.isVisible = value;
+        if (value) {
+            this.element.classList.add("visible", "moved");
+            this.element.classList.remove("invisible");
+        }
+        else {
+            this.element.classList.add("invisible");
+            this.element.classList.remove("visible", "moved");
+        }
     }
 }

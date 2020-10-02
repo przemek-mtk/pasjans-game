@@ -1,6 +1,6 @@
 import { Game } from "./classes/Game.js";
 import { Card } from "./classes/Card.js";
-import { ICard } from "./interfaces/ICard.js";
+import { ICard, IPosition } from "./interfaces/ICard.js";
 import { IColumn } from "./interfaces/IColumn.js";
 import { Movements } from "./classes/Movements.js";
 import { Timer } from "./classes/Timer.js";
@@ -17,17 +17,15 @@ enum Column {
   ForSelectionNext = 12,
 }
 
+// sprawdza czy przekazany obiekt ma jakiekolwiek property
+const isEmpty = (obj: Object) => {
+  return Object.keys(obj).length === 0 && obj.constructor === Object;
+};
+
 let g = new Game();
 g.startGame();
 
 console.log(g.columns);
-// console.log("one:::: ", g.column[].getCards())
-// console.log("two:::: ", g.column.two.getCards())kt
-// console.log("three:::: ", g.column.three.getCards())
-// console.log("four:::: ", g.column.four.getCards())
-// console.log("five:::: ", g.column.five.getCards())
-// console.log("six:::: ", g.column.six.getCards())
-// console.log("seven:::: ", g.column.seven.getCards())
 
 const btn = document.querySelector("#new-game") as HTMLButtonElement;
 btn.addEventListener("click", (e: Event) => {
@@ -45,44 +43,32 @@ btn.addEventListener("click", (e: Event) => {
 
 const movements = document.querySelector("#movements") as HTMLDivElement;
 const m = new Movements(movements);
-// m.increaseState()
 
 const timer = document.querySelector("#timer") as HTMLDivElement;
 const t = new Timer(timer);
 t.startTimer();
 
-
 const undo = document.querySelector("#undo");
 undo?.addEventListener("click", (e: Event) => {
-  console.log("undo")
+  console.log("undo");
   let currentMovement = m.getMovements();
   let prevMovment = currentMovement - 1;
   g.getHistory(prevMovment);
-  m.decrementState()
-})
-// console.log("one:::: ", g.columns[Column.One].getCards());
-// console.log("two:::: ", g.columns[Column.Two].getCards());
-// console.log("three:::: ", g.columns[Column.Three].getCards());
-// console.log("four:::: ", g.columns[Column.Four].getCards());
-// console.log("five:::: ", g.columns[Column.Five].getCards());
-// console.log("six:::: ", g.columns[Column.Six].getCards());
-// console.log("seven:::: ", g.columns[Column.Seven].getCards());
+  m.decrementState();
+});
+
 function foo() {
-
-  //  rozłożenie kart na miejsca
-  const deck = g.getCards();
-  deck.forEach((x) => x.moveTo());
-
-  
-  
   //zapisuje początkowy stan gry
-  g.setHistory(m.getMovements())
+  g.setHistory(m.getMovements());
 
-  const cards = Array.from(document.querySelectorAll(".card"));
-  const forSelection = Array.from(document.querySelectorAll(".for-selection"));
+  const cards = Array.from(
+    document.querySelectorAll(".card")
+  ) as HTMLDivElement[];
+  const forSelection = Array.from(
+    document.querySelectorAll(".for-selection")
+  ) as HTMLDivElement[];
   const repeat = document.querySelector(".repeat") as HTMLDivElement;
 
-  // let x = g.columns; //.slice(0, 11);
 
   cards.forEach((element, index) => {
     // pozycja kursora w momencie mousedown
@@ -91,10 +77,12 @@ function foo() {
       y: 0,
     };
 
+    const currentCard: ICard = g.findCard(element);
+
     // dane karty
     const cardData = {
-      color: deck[index].color,
-      value: deck[index].value,
+      color: currentCard.color,
+      value: currentCard.value,
     };
 
     // callback function dla window "mousemove"
@@ -104,10 +92,8 @@ function foo() {
     let clickedColumn: IColumn;
     // id karty którą przenoszę - potrzebne do ustawienia class visible dla elementu wyżej
     let clickedCardId: number;
-    // karty które prznoszę - element Dom[]
-    // let belowClickedCard;
     // karty które przenoszę - Card[]
-    let instantCards: ICard[];
+    let belowClickedCard: ICard[];
 
     // ************************************************************************************************************************************************************************************
     // ************************************************************************************************************************************************************************************
@@ -117,7 +103,7 @@ function foo() {
       if (e.currentTarget!.classList.contains("moved")) {
         console.log("mousedown");
 
-        console.log("YOU CLICKED:::", deck[index]);
+        console.log("YOU CLICKED:::", currentCard);
 
         // zapisanie pozycji kursora na karcie
         clickedPosition.x = element.offsetLeft - e.clientX;
@@ -126,23 +112,25 @@ function foo() {
         // kolumna w która klikam
         clickedColumn = g.getColumn(cardData);
         clickedCardId = clickedColumn.getCardId(cardData);
-        let belowClickedCard = clickedColumn.getCardsBelow(clickedCardId);
+        belowClickedCard = clickedColumn.getCardsBelow(clickedCardId);
+        belowClickedCard.forEach((c) => {
+          c.setPosition({ x: c.element.offsetLeft, y: c.element.offsetTop });
+        });
+
+        console.log("HERE, THIS CARD YOU CLIKED ---> ", belowClickedCard);
 
         //ustawiam obecną pozycję kart jako początkową podczas przenoszenia
-        instantCards = belowClickedCard.map((c) => {
+        // instantCards = belowClickedCard.map((c) => {
 
-          return c.setPosition({ x: c.element.offsetLeft, y: c.element.offsetTop })
-        }
-        );
+        //   return c.setPosition({ x: c.element.offsetLeft, y: c.element.offsetTop })
+        // }
+        // );
         // calback fn in window "move" event
-        cb = (e) => instantCards.map((c, i) => c.move(e, clickedPosition, i));
+        cb = (e) =>
+          belowClickedCard.forEach((c, i) => c.move(e, clickedPosition, i));
         window.addEventListener("mousemove", cb);
-
-        console.log("clickedCardId", clickedCardId);
-        console.log("clickedColumn", clickedColumn);
       }
     });
-
     // ************************************************************************************************************************************************************************************
     // ************************************************************************************************************************************************************************************
     // ************************************************************************************************************************************************************************************
@@ -160,209 +148,102 @@ function foo() {
         // nie potrzebuje ostatnich dwóch kolumn -  nie chce dodawać tam kart
         let x = g.columns.slice(0, 11);
 
-        let targetCards = x.map((column) => column.getLastCard());
-        console.log("targetCards",targetCards);
+        let targetCards = x.map((column) => {
+          if (column.direction === "down") {
+            return column.getLastCard();
+          } else {
+            return column.getFirstCard();
+          }
+        });
+        console.log("targetCards", targetCards);
         // sprawdzam do której karty pasuje przenoszona karta - zwraca element DOM lub undefined
         let cardAndColumnWhoWantsThisOtherCards = targetCards
           // .find((tCard, i) => new Card(tCard).checkIfFits(element, g.columns[i]));
           .reduce((acc, tCard, i) => {
             let x;
-            // console.log()
-            if(tCard instanceof Card) {
-              x = tCard.checkIfFits(element, g.columns[i]);
+            if (tCard instanceof Card) {
+              // deck[index] to obiekt z this.cards który odpowiada elementovi DOM na którym jest wykonywane zdarzenie "mouseup"
+              x = tCard.checkIfFits(currentCard, g.columns[i]);
             } else {
-              x = new Card(tCard.element, null, null, 0,0).checkIfFits(element, g.columns[i]);
+              x = new Card(tCard.element, null, null, 0, 0, true).checkIfFits(
+                currentCard,
+                g.columns[i]
+              );
             }
-            
-            
-            // let x = new Card(tCard).checkIfFits(element, g.columns[i]);
-            // console.log(x)
+
             if (x !== undefined) {
               return {
-                element: tCard.element,
-                columnNum: i,
-                card: tCard
+                column: g.columns[i],
+                card: tCard,
               };
             }
             return acc;
           }, {});
 
-        // console.log(
-        //   "cardAndColumnWhoWantsThisOtherCards",
-        //   cardAndColumnWhoWantsThisOtherCards
-        // );
+        console.log(
+          "cardAndColumnWhoWantsThisOtherCards:::::::::::::",
+          cardAndColumnWhoWantsThisOtherCards
+        );
 
-        // sprawdzam czy któraś kolumna chce ta kartę
-        // x - kolumny od 0-6
-        // let nwm = x.find(col => col.nextCard.colors.includes(cardData.color) && col.nextCard.value === cardData.value);
-        // nmw = columna na której puszczono kartę i ta kolumna jest w sanie ją przyjąć
-        // console.log("nie wiem jak to opisć=======", nwm);
-        // nwm?.addCard()
 
-        /*
-      // elementy które przyjmują karty od asa w górę
-      let z = g.aboveAs.map(column => column.getLastCard());
-      let boxWhoWantsAsUp = z.find(tCard => new Card(tCard).checkIfFits(element) === true);
-      console.log("boxWhoWantsAsUp", boxWhoWantsAsUp);
-
-      if(boxWhoWantsAsUp) {
-        let newPosition: {x: number, y: number} = {x: boxWhoWantsAsUp.offsetLeft, y: boxWhoWantsAsUp.offsetTop};
-        if(instantCards.length === 1) {
-          instantCards.forEach((c, i) => c.setPosition({x: newPosition.x, y: newPosition.y})); 
-        }
-
-        let q = g.getColumn({color: boxWhoWantsAsUp.dataset.color, value: parseFloat(boxWhoWantsAsUp.dataset.value)}, "up")
-        console.log("qq:::::::::::::", q);
-
-        q.addCard(clickedColumn.getCardsBelow(clickedCardId));
-        // usuwam przeniesione karty ze starej kolumny
-        clickedColumn.removeCards(clickedCardId);
-        // usuwam klasę(CSS) invisible i dodaję visible do ostatniego elementu DOM w columnie z której prznieniosłem karty
-        if(clickedColumn.getLastCard()) { // dopóki zwraca element
-          clickedColumn.getLastCard()!.classList.remove("invisible");
-          clickedColumn.getLastCard()!.classList.add("visible");
-          clickedColumn.getLastCard()!.classList.add("moved");
-        }
-        // jeśli kliknieta kolumna jest tą która trzyma odsłoniete karty
-        //to cofnij jej ostatnie 3 karty w lewo stronę (style.left) o jedną zabraną kartę
-        if(clickedColumn === g.columns[Column.ForSelectionNext]) {
-          clickedColumn.moveCards();
-        }
-
-      }
-*/
-
-        let belowClickedCard = clickedColumn.getCardsBelow(clickedCardId);
-        //te karty chce przenieść
-        // let clickedColumn = g.getColumn(cardData);
-        // console.log("clickedColumn", clickedColumn);
-        // let clickedCardId = clickedColumn.getCardId(cardData);
-        // console.log("clickedCardId", clickedCardId);
-        // let belowClickedCard = clickedColumn.getCardsBelow(clickedCardId);
-        // console.log("belowClickedCard", belowClickedCard);
 
         //pobieram kolumnę nad którą puszczasz kartę
-        let columnWitchGetCards;
-        if (cardAndColumnWhoWantsThisOtherCards.element) {
-          // zmieniam kolumnę która ma te karty
-          // columnWitchGetCards = g.getColumn({color: cardAndColumnWhoWantsThisOtherCards.dataset.color, value: parseFloat(cardAndColumnWhoWantsThisOtherCards.dataset.value)})
-          columnWitchGetCards =
-            g.columns[cardAndColumnWhoWantsThisOtherCards.columnNum];
-          // console.log("columnWitchGetCards", columnWitchGetCards);
-
-          // nowa pozycja dla kart
-          let newPosition: { x: number; y: number };
-          if (
-            cardAndColumnWhoWantsThisOtherCards.element.classList.contains(
-              "special"
-            )
-          ) {
-            //ostatnie elementy w kolumnie -  boxy do których rozdaje karty
+        let columnWitchGetCards: IColumn;
+        if (!isEmpty(cardAndColumnWhoWantsThisOtherCards)) {
+          columnWitchGetCards = cardAndColumnWhoWantsThisOtherCards.column;
+          let newPosition: IPosition;
+          // boxy do których rozdaje karty + boxy od asa w górę
+          if (cardAndColumnWhoWantsThisOtherCards.card.isSpecial) {
             newPosition = {
-              x: cardAndColumnWhoWantsThisOtherCards.element.offsetLeft + 5,
-              y: cardAndColumnWhoWantsThisOtherCards.element.offsetTop - 95,
-            };
-          } else if (
-            cardAndColumnWhoWantsThisOtherCards.columnNum > 6 &&
-            cardAndColumnWhoWantsThisOtherCards.columnNum < 11
-          ) {
-            console.log(
-              "TUTAJ :",
-              columnWitchGetCards.getCardsBelow(0)[0].offsetLeft,
-              columnWitchGetCards.getCardsBelow(0)[0].offsetTop
-            );
-            newPosition = {
-              x: columnWitchGetCards.getCardsBelow(0)[0].offsetLeft + 5,
-              y: columnWitchGetCards.getCardsBelow(0)[0].offsetTop - 95,
+              x: cardAndColumnWhoWantsThisOtherCards.card.position.x + 5,
+              y: cardAndColumnWhoWantsThisOtherCards.card.position.y + 5,
             };
           } else {
             //zwykła karta na która pasuje puszczna karta
             newPosition = {
-              x: cardAndColumnWhoWantsThisOtherCards.element.offsetLeft,
-              y: cardAndColumnWhoWantsThisOtherCards.element.offsetTop,
+              x: cardAndColumnWhoWantsThisOtherCards.card.position.x,
+              y: cardAndColumnWhoWantsThisOtherCards.card.position.y + 100, // +100 by obniżyć kartę by było widać tą pod spodem
             };
           }
 
-          // console.log("instantCards", instantCards)
-          // instantCards.forEach(c => c.moveTo());
-          // instantCards.forEach((c, i) => c.setPosition({ x: s.x, y: s.y + i * 100}));
-          // console.log("instantCards instantCards instantCards instantCards", instantCards)
-          instantCards.forEach((c, i) =>
-            c.setPosition({
-              x: newPosition.x,
-              y: newPosition.y + i * 100 + 100,
-            })
+          belowClickedCard.forEach((c, i) =>
+            c
+              .setPosition({
+                x: newPosition.x,
+                y: newPosition.y + i * 100,
+              })
+              .moveTo()
           );
-          // belowClickedCard.forEach((e,i) => {
-          //   e.style.top = s.y + i * 100 + 100  + "px";
-          //   e.style.left = s.x + "px";
-          // })
-          // } else {
-          //   // niestety chłopaki wracacie do domu
-          //   // belowClickedCard.forEach((e,i) => {
-          //   //   e.style.top = s.y + i * 100 + 100  + "px";
-          //   //   e.style.left = s.x + "px";
-          //   // })
 
           // dodaje przenoszona karty do kolumny nad którą upuściłem
           columnWitchGetCards.addCard(belowClickedCard);
           // usuwam przeniesione karty ze starej kolumny
           clickedColumn.removeCards(clickedCardId);
-          console.log("clickedColumn", clickedColumn)
+          console.log("clickedColumn", clickedColumn);
+
           // usuwam klasę(CSS) invisible i dodaję visible do ostatniego elementu DOM w columnie z której prznieniosłem karty
-          if (clickedColumn.getLastCard()) {
+          if (
+            clickedColumn.getLastCard() &&
+            clickedColumn.getLastCard().hasOwnProperty("color")
+          ) {
             // dopóki zwraca element
-            clickedColumn.getLastCard().element.classList.remove("invisible");
-            clickedColumn.getLastCard().element.classList.add("visible");
-            clickedColumn.getLastCard().element.classList.add("moved");
+            clickedColumn.getLastCard().setIsVisible(true);
           }
+
           // jeśli kliknieta kolumna jest tą która trzyma odsłoniete karty
           //to cofnij jej ostatnie 3 karty w lewo stronę (style.left) o jedną zabraną kartę
           if (clickedColumn === g.columns[Column.ForSelectionNext]) {
             clickedColumn.moveCards();
           }
 
-          
-          // ta nie chce być ostatnia - zmiana isLast na false
-          const przykryta = cardAndColumnWhoWantsThisOtherCards.card;
-          console.log("TUTAJ PATRZ TĄ PRZYKRYŁEŚ:::",przykryta)
-          const odkryta = clickedColumn.getLastCard();
-          console.log("TUTAJ PATRZ TĄ ODKRYŁEŚ:::",odkryta)
-
-          if(przykryta.hasOwnProperty("color") && odkryta.hasOwnProperty("color")) {
-            // przykryta.setIsLast(false);
-            let id = przykryta.idInColumn;
-            let idCol = przykryta.columnId;
-            belowClickedCard.forEach((c,i) => {
-              c.changeColumnId(idCol);
-              c.changeIdInColumn(id + i + 1)
-            })
-            // przykryta.setIsLast(true);
-            odkryta.setIsVisible();
-          }
-          // const ostatnie = g.columns.forEach(col => console.log("wtf", col.getLastCard().isLast = true))
-          // po co mi isLast jak mam getLastInColumn dla column???????
-          // console.log("")
-
           // dodaje +1 do movements
           m.incrementState();
           g.setHistory(m.getMovements());
+        } else {
+          // prznieś karty do nowej pozycji - lub cofnij do starej pozycji
+          // instantCards.forEach((c) => c.moveTo());
+          belowClickedCard.forEach((c) => c.moveTo());
         }
-
-        // console.log("instantCards", instantCards)
-
-        // prznieś karty do nowej pozycji - lub cofnij do starej pozycji
-        instantCards.forEach((c) => c.moveTo());
-        // console.log("instantCards instantCards instantCards instantCards", instantCards)
-
-        // console.log(g.columns)
-
-        // let s = g.getColumn({color: "kier", value: 12})
-        // console.log(s);
-        // let column = g.getColumn(cardData)
-        // let mouseupInCard = column.getLastCard()
-        // console.log("mouseupInCard", mouseupInCard)
-        // console.log(g.columns);
       }
     });
   });
@@ -373,21 +254,14 @@ function foo() {
   forSelection.forEach((element) => {
     element.addEventListener("click", (e: Event) => {
       if (element.classList.contains("invisible")) {
-        const lastCard: ICard = g.columns[
-          Column.ForSelection
-        ].getLastCard();
-        
-        // console.log("LAST CARDDD", lastCard)
-        
-        lastCard?.element.classList.remove("invisible");
-        lastCard?.element.classList.add("visible");
+        const lastCard: ICard = g.columns[Column.ForSelection].getLastCard();
 
-        // usuwam z forSelection ostatnią kartę -  to ta kliknięta
-        g.columns[Column.ForSelection].removeCards(
-          g.columns[Column.ForSelection].getCardsBelow(0).length - 1
-        );
+        lastCard?.setIsVisible(true);
+
         // i dodaję ją do kolumny obok
         g.columns[Column.ForSelectionNext].addCard([lastCard]);
+        // usuwam z forSelection ostatnią kartę -  to ta kliknięta
+        g.columns[Column.ForSelection].removeCards(-1);
         // ruszam ostatnie 3 karty jakie trafiły do kolumny 12 (Column.ForSelectionNext)
         g.columns[Column.ForSelectionNext].moveCards();
 
@@ -395,18 +269,8 @@ function foo() {
         m.incrementState();
         let key = m.getMovements();
         // let columns = g.columns;
-        // console.log("g.columns g.columns g.columns g.columns ", [...columns] )
-        g.setHistory(key)
-        // const xxx = 
-        // console.log("to jest zapisane w historiii::::", xxx)
-        // console.log(
-        //   "Column.ForSelection::: ",
-        //   g.columns[Column.ForSelection].getCardsBelow(0)
-        // );
-        // console.log(
-        //   "Column.ForSelectionNext::: ",
-        //   g.columns[Column.ForSelectionNext].getCardsBelow(0)
-        // );
+        g.setHistory(key);
+        // const xxx =
       }
     });
   });
@@ -415,12 +279,9 @@ function foo() {
   repeat.addEventListener("click", (e: Event) => {
     const cards = g.columns[Column.ForSelectionNext].getCardsBelow(0).reverse();
     cards.forEach((c) => {
-      c.element.classList.add("invisible");
-      c.element.classList.remove("visible");
-      c.element.style.left = "0px";
+      c.setPosition({ x: 0, y: 0 }).moveTo();
+      c.setIsVisible(false);
     });
-
-    // console.log("cards", cards);
 
     g.columns[Column.ForSelectionNext].removeCards(0);
     g.columns[Column.ForSelection].addCard(cards);

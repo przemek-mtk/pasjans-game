@@ -1,6 +1,7 @@
 import { IColumn } from "../interfaces/IColumn";
 import { ICards } from "../interfaces/ICards";
 import { ICard } from "../interfaces/ICard";
+import { Card } from "./Card.js";
 
 export class Column implements IColumn {
   // private cardsInColumn: HTMLDivElement[] = [];
@@ -18,10 +19,11 @@ export class Column implements IColumn {
   }
 
   // ustala jaka jest będzie następna karta
-  private setNextCard(): void {
+  private _setNextCard(): void {
     const lastCard = this.getLastCard(); // as HTMLDivElement;
     let blackColor = ["pik", "trefl"];
     let redColor = ["kier", "karo"];
+
 
     if (this.cardsInColumn.length === 1) {
       this.nextCard.colors = blackColor.concat(redColor);
@@ -41,17 +43,25 @@ export class Column implements IColumn {
   }
 
   addCard(card: ICard[]) {
+    // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
+    card.forEach((c, i) => {
+      if (c instanceof Card) {
+        c.changeColumnId(this.columnNum);
+        c.changeIdInColumn(this.cardsInColumn.length + i);
+      }
+    });
+    //dodaje karty do kolumny
     this.cardsInColumn = this.cardsInColumn.concat(card);
 
     // ustalam jaka będzie następna karta
-    this.setNextCard();
+    this._setNextCard();
   }
 
   removeCards(id: number) {
     this.cardsInColumn.splice(id);
 
     // ustalam jaka będzie następna karta
-    this.setNextCard();
+    this._setNextCard();
   }
 
   // zwraca karty od klikniętej w dół
@@ -63,11 +73,15 @@ export class Column implements IColumn {
   getLastCard() {
     const colLength = this.cardsInColumn.length;
 
+
     if (colLength > 0) {
       return this.cardsInColumn[colLength - 1];
     }
-
     return null;
+  }
+
+  getFirstCard() {
+    return this.cardsInColumn[0]
   }
 
   // zwraca index klikniętej karty
@@ -83,18 +97,9 @@ export class Column implements IColumn {
     let lastThree: ICard[] = this.getCardsBelow(0).slice(-3).reverse();
     lastThree.forEach((elem, i) => {
       // elem.element.style.left = `${100 + i * 100}px`;
-      let pos = {x: 100 + i * 100, y: 0};
-      elem.setPosition(pos)
-      elem.moveTo()
+      let pos = { x: 100 + i * 100, y: 0 };
+      elem.setPosition(pos).moveTo();
 
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // to jest do poprawy jak najbardziej!!!
-      // JAK COFAM NIE MOGĘ RUSZYĆ KARTĄ!!
       if (i == 0) {
         // pozwala na przeniesienie karty
         elem.element.classList.add("moved");

@@ -1,12 +1,12 @@
 export class History {
-  private history = new Map();
+  private _history = new Map();
 
   setHistory(key: number, value) {
-    this.history.set(key, value);
+    this._history.set(key, value);
   }
 
   getHistory(key: number) {
-    this.history.get(key)
+    this._history.get(key)
   }
 
 }

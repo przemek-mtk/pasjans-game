@@ -1,4 +1,5 @@
 import { IColumn } from "./IColumn";
+import { ICards } from "./ICards";
 
 export interface ICard {
   element: HTMLDivElement;
@@ -15,13 +16,13 @@ export interface ICard {
   moveTo(): void;
   setPosition(position: IPosition): ICard;
   checkIfFits(
-    elem: HTMLDivElement,
+    elem: ICard,
     column: IColumn
-  ): HTMLDivElement | undefined;
+  ): ICard | undefined;
   changeColumnId(collumnId: number): void;
   changeIdInColumn(id: number): void;
   // setIsLast(value: boolean): void;
-  setIsVisible(): void;
+  setIsVisible(value: boolean): void;
 }
 
 export interface IPosition {
