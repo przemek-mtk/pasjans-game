@@ -77,6 +77,15 @@ export class Card {
             return;
         }
     }
+    // metoda sprawdza zcy karta pasuje do jaieś kolumny
+    checkColumnForElement(column) {
+        const { color, value } = this;
+        console.log(color, value);
+        if (column.nextCard.colors.includes(color) &&
+            column.nextCard.value === value) {
+            return column;
+        }
+    }
     // nowe metody:::
     // render() {
     //   let pos = {
@@ -99,12 +108,15 @@ export class Card {
     setIsVisible(value) {
         this.isVisible = value;
         if (value) {
-            this.element.classList.add("visible", "moved");
+            this.element.classList.add("visible");
             this.element.classList.remove("invisible");
         }
         else {
             this.element.classList.add("invisible");
-            this.element.classList.remove("visible", "moved");
+            this.element.classList.remove("visible");
         }
+    }
+    setIsMoved(value) {
+        this.isMoved = value;
     }
 }

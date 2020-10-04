@@ -77,12 +77,15 @@ export class Column {
             // elem.element.style.left = `${100 + i * 100}px`;
             let pos = { x: 100 + i * 100, y: 0 };
             elem.setPosition(pos).moveTo();
+            elem.setIsVisible(true);
             if (i == 0) {
                 // pozwala na przeniesienie karty
-                elem.element.classList.add("moved");
+                elem.setIsMoved(true);
+                // elem.element.classList.add("moved");
             }
             else {
-                elem.element.classList.remove("moved");
+                elem.setIsMoved(false);
+                // elem.element.classList.remove("moved");
             }
         });
     }

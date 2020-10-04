@@ -94,17 +94,20 @@ export class Column implements IColumn {
 
   // porusza karty prawo-lewo w sekcji "dobór kart"
   moveCards() {
+    
     let lastThree: ICard[] = this.getCardsBelow(0).slice(-3).reverse();
     lastThree.forEach((elem, i) => {
       // elem.element.style.left = `${100 + i * 100}px`;
       let pos = { x: 100 + i * 100, y: 0 };
       elem.setPosition(pos).moveTo();
-
+      elem.setIsVisible(true);
       if (i == 0) {
         // pozwala na przeniesienie karty
-        elem.element.classList.add("moved");
+        elem.setIsMoved(true);
+        // elem.element.classList.add("moved");
       } else {
-        elem.element.classList.remove("moved");
+        elem.setIsMoved(false);
+        // elem.element.classList.remove("moved");
       }
     });
   }

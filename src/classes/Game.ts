@@ -155,6 +155,7 @@ export class Game implements IGame {
       const { color, value } = elem;
 
       isVisible = false;
+      // isVisible = true;
       isMoved = false;
       // isLast = false;
 
@@ -180,7 +181,7 @@ export class Game implements IGame {
         idInColumn = row;
         //zmiana visible dla konkretnych kart, które są ostatnimi w swojej columnie
         if (id === lastIdInRow) {
-          cardContainer.classList.add("visible", "moved");
+          cardContainer.classList.add("visible");
           cardContainer.classList.remove("invisible");
           isVisible = true;
           isMoved = true;
@@ -248,7 +249,6 @@ export class Game implements IGame {
     container.append(cards);
   }
 
-
   // zwraca klikniętą kolumnę
   getColumn(data: ICards) {
     return this.columns.find((col) => col.getCardId(data) > -1);
@@ -288,7 +288,7 @@ export class Game implements IGame {
       console.log("KEYYYYYYYYYYYYYYYYYYYYYYYY:", prevMovement, key);
       //nadpisuje wartość dla tis._cards
       this._cards = [];
-      
+
       // czyszcze kolumny
       this.columns.forEach((col, id) => {
         // wszystkie kolumny które mają dodatkowy element
@@ -313,21 +313,56 @@ export class Game implements IGame {
             // elem.isLast
           );
 
-
           newCard.setPosition(elem.position).moveTo();
           this.columns[elem.columnId].addCard([newCard]);
           this._cards.push(newCard);
-
         });
       });
     } else {
       console.log("Nie możesz cofnać!!");
     }
 
+    console.log("po wepchnieciu kart", this._cards);
     console.log("TO DOSTAJE Z POWROTEM :::: ", this.columns);
   }
 
   findCard(element: HTMLDivElement) {
     return this._cards.find((c) => c.element === element);
+  }
+
+  gameResult() {
+    let result = this.columns
+      .filter((col) => col.direction === "up")
+      .every((col) => col.cardsInColumn.length === 13);
+
+    console.log("WYGRAŁEŚ??? --> ", result);
+
+    if (result) {
+      alert("WYGRAŁEŚ BYCZKU! xD");
+    }
+  }
+
+  // **************************************************************************
+  // **************************************************************************
+  // **************************************************************************
+  // **************************************************************************
+  autocompleteCards() {
+    // biorę tylko kolumny do których rozdaję karty na poczatku (index: 0-6)
+    let allPlayingCardsAreVisible = this._cards
+      .filter((card) => card.columnId < 7)
+      .every((card) => card.isVisible === true);
+
+    const columnsWithPlayingCards = this.columns.slice(0, 7);
+    const columnsAceUp = this.columns.filter((col) => col.direction === "up");
+    const columnsWithSelectionCards = this.columns.slice(11);
+    console.log(columnsWithSelectionCards);
+
+    console.log(
+      columnsWithPlayingCards,
+      columnsAceUp,
+      columnsWithSelectionCards
+    );
+
+    console.log(allPlayingCardsAreVisible);
   }
 }

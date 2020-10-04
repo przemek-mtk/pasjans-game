@@ -121,6 +121,7 @@ export class Game {
             let cValue = document.createElement("p"); // to jest do wyszucenia! - chyba
             const { color, value } = elem;
             isVisible = false;
+            // isVisible = true;
             isMoved = false;
             // isLast = false;
             cColor.innerText = color;
@@ -141,7 +142,7 @@ export class Game {
                 idInColumn = row;
                 //zmiana visible dla konkretnych kart, które są ostatnimi w swojej columnie
                 if (id === lastIdInRow) {
-                    cardContainer.classList.add("visible", "moved");
+                    cardContainer.classList.add("visible");
                     cardContainer.classList.remove("invisible");
                     isVisible = true;
                     isMoved = true;
@@ -235,9 +236,35 @@ export class Game {
         else {
             console.log("Nie możesz cofnać!!");
         }
+        console.log("po wepchnieciu kart", this._cards);
         console.log("TO DOSTAJE Z POWROTEM :::: ", this.columns);
     }
     findCard(element) {
         return this._cards.find((c) => c.element === element);
+    }
+    gameResult() {
+        let result = this.columns
+            .filter((col) => col.direction === "up")
+            .every((col) => col.cardsInColumn.length === 13);
+        console.log("WYGRAŁEŚ??? --> ", result);
+        if (result) {
+            alert("WYGRAŁEŚ BYCZKU! xD");
+        }
+    }
+    // **************************************************************************
+    // **************************************************************************
+    // **************************************************************************
+    // **************************************************************************
+    autocompleteCards() {
+        // biorę tylko kolumny do których rozdaję karty na poczatku (index: 0-6)
+        let allPlayingCardsAreVisible = this._cards
+            .filter((card) => card.columnId < 7)
+            .every((card) => card.isVisible === true);
+        const columnsWithPlayingCards = this.columns.slice(0, 7);
+        const columnsAceUp = this.columns.filter((col) => col.direction === "up");
+        const columnsWithSelectionCards = this.columns.slice(11);
+        console.log(columnsWithSelectionCards);
+        console.log(columnsWithPlayingCards, columnsAceUp, columnsWithSelectionCards);
+        console.log(allPlayingCardsAreVisible);
     }
 }
