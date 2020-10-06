@@ -1,12 +1,18 @@
 import { IColumn } from "../interfaces/IColumn";
 import { ICards } from "../interfaces/ICards";
-import { ICard } from "../interfaces/ICard";
+import { ICard, IPosition } from "../interfaces/ICard";
 import { Card } from "./Card.js";
 
 export class Column implements IColumn {
   // private cardsInColumn: HTMLDivElement[] = [];
   public cardsInColumn: ICard[] = [];
   public nextCard: { colors: string[]; value: number };
+  public isEmpty: boolean = true;
+  readonly position: IPosition;
+
+  setColumnPosition(position: IPosition) {
+    this.position = position;
+  }
 
   constructor(
     readonly columnNum: number,
@@ -23,7 +29,6 @@ export class Column implements IColumn {
     const lastCard = this.getLastCard(); // as HTMLDivElement;
     let blackColor = ["pik", "trefl"];
     let redColor = ["kier", "karo"];
-
 
     if (this.cardsInColumn.length === 1) {
       this.nextCard.colors = blackColor.concat(redColor);
@@ -43,11 +48,32 @@ export class Column implements IColumn {
   }
 
   addCard(card: ICard[]) {
-    // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
+    // dodaj kartę do direction up jeśli jest to jedna kart
+    // do kolumn direction down dodawaj po kilka
+    // if (
+    //   (this.direction === "up" && card.length === 1) ||
+    //   this.direction === "down"
+    //   ) {
+    //     // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
+    //     let newPosition;
+    //     // nie interesuje mnie pierwszy dodawany obiekt
+    //     if(this.isEmpty) {
+    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
+    //     } else if(this.columnNum < 11) {
+    //       newPosition = {x: this.getLastCard()?.position.x  , y: this.getLastCard()?.position.y + 100}
+    //     } else {
+    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
+    //     }
+
+    //     if(this.direction === "up") {
+    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
+    //     }
+
     card.forEach((c, i) => {
       if (c instanceof Card) {
         c.changeColumnId(this.columnNum);
         c.changeIdInColumn(this.cardsInColumn.length + i);
+        // c.setPosition({x: newPosition.x, y: newPosition.y}).moveTo()
       }
     });
     //dodaje karty do kolumny
@@ -55,6 +81,12 @@ export class Column implements IColumn {
 
     // ustalam jaka będzie następna karta
     this._setNextCard();
+    // ta kolumna nie jset pusta
+    if (card[0] instanceof Card) this.isEmpty = false;
+    // }
+    //  else {
+    //   card.forEach(c => c.moveTo())
+    // }
   }
 
   removeCards(id: number) {
@@ -62,6 +94,49 @@ export class Column implements IColumn {
 
     // ustalam jaka będzie następna karta
     this._setNextCard();
+
+    if (this.cardsInColumn.length === 1 && this.columnNum < 11) {
+      this.isEmpty = true;
+    }
+    if (this.cardsInColumn.length === 0) {
+      this.isEmpty = true;
+    }
+  }
+
+  moveIfPossible(card: ICard[], clickedColumn: IColumn, id: number) {
+    // warunek zapobiega dodawaniu do "od asa w górę" stosu kart
+    if (
+      (this.direction === "up" && card.length === 1) ||
+      this.direction === "down"
+    ) {
+      let newPosition: IPosition;
+      if (this.isEmpty || this.direction === "up") {
+        newPosition = { x: this.position.x + 5, y: this.position.y + 5 };
+      } else {
+        newPosition = {
+          x: this.getLastCard()!.position.x,
+          y: this.getLastCard()!.position.y + 100,
+        };
+      }
+
+      card.forEach((c, i) =>
+        c
+          .setPosition({
+            x: newPosition.x,
+            y: newPosition.y + i * 100,
+          })
+          .moveTo()
+      );
+
+      // dodaje przenoszona karty do kolumny nad którą upuściłem
+      this.addCard(card);
+      // usuwam przeniesione karty ze starej kolumny
+      clickedColumn.removeCards(id);
+      // console.log("clickedColumn", clickedColumn);
+    } else {
+      card.forEach((c) => c.moveTo());
+      console.log("TO DZIAŁA PRAWDA??!?!?!?");
+    }
   }
 
   // zwraca karty od klikniętej w dół
@@ -73,7 +148,6 @@ export class Column implements IColumn {
   getLastCard() {
     const colLength = this.cardsInColumn.length;
 
-
     if (colLength > 0) {
       return this.cardsInColumn[colLength - 1];
     }
@@ -81,7 +155,7 @@ export class Column implements IColumn {
   }
 
   getFirstCard() {
-    return this.cardsInColumn[0]
+    return this.cardsInColumn[0];
   }
 
   // zwraca index klikniętej karty
@@ -92,9 +166,42 @@ export class Column implements IColumn {
     );
   }
 
+  // metoda sprawdza czy karta pasuje do kolumny
+  checkColumnForElement(card: ICard) {
+    const { colors, value } = this.nextCard;
+    if (colors.includes(card.color!) && value === card.value) {
+      return this;
+    }
+  }
+
+  // metoda dla kolumny 11 - przenosi wszystkie karty z 12 do 11
+  moveCardsBack(fromColumn: IColumn) {
+    const cards: ICard[] = fromColumn.getCardsBelow(0).reverse();
+    cards.forEach((c) => {
+      c.setPosition({ x: 0, y: 0 }).moveTo();
+      c.setIsVisible(false);
+      c.setIsMoved(false);
+    });
+
+    fromColumn.removeCards(0);
+    this.addCard(cards);
+  }
+
+  // metoda odpowiada za przenoszenie ostatniej karty z kolumny 11 do kolumny 12
+  // kolumny "do doboru"
+  getNextCardFrom(fromColumn: IColumn) {
+    // ostatnia karta z 11 kolumny
+    const cardToAdd: ICard = fromColumn.getLastCard();
+    // dodaję ją do tej kolumny (kolumna 12)
+    this.addCard([cardToAdd]);
+    // usuwam z kolumny ostatnią kartę -  to ta w którą klikam
+    fromColumn.removeCards(-1);
+    // ruszam ostatnie 3 karty jakie trafiły do kolumny 12 (Column.ForSelectionNext)
+    this.moveCards();
+  }
+
   // porusza karty prawo-lewo w sekcji "dobór kart"
   moveCards() {
-    
     let lastThree: ICard[] = this.getCardsBelow(0).slice(-3).reverse();
     lastThree.forEach((elem, i) => {
       // elem.element.style.left = `${100 + i * 100}px`;

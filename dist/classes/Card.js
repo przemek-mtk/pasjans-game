@@ -1,5 +1,6 @@
 export class Card {
-    constructor(element, color, value, columnId, idInColumn, isVisible = false, isMoved = false) {
+    constructor(element, color, value, columnId, idInColumn, isVisible = false, isMoved = false // public isLast: boolean = false
+    ) {
         this.element = element;
         this.color = color;
         this.value = value;
@@ -72,20 +73,23 @@ export class Card {
             const { color, value } = elem;
             if (column.nextCard.colors.includes(color) &&
                 column.nextCard.value === value) {
-                return elem;
+                return true;
             }
-            return;
+            return false;
         }
     }
-    // metoda sprawdza zcy karta pasuje do jaieś kolumny
-    checkColumnForElement(column) {
-        const { color, value } = this;
-        console.log(color, value);
-        if (column.nextCard.colors.includes(color) &&
-            column.nextCard.value === value) {
-            return column;
-        }
-    }
+    // // metoda sprawdza czy karta pasuje do kolumny
+    // checkColumnForElement(column: IColumn) {
+    //   console.log("checkColumnForElement", this)
+    //   const { color, value } = this;
+    //   // console.log(color, value)
+    //   if (
+    //     column.nextCard.colors.includes(color!) &&
+    //     column.nextCard.value === value
+    //   ) {
+    //     return column;
+    //   }
+    // }
     // nowe metody:::
     // render() {
     //   let pos = {

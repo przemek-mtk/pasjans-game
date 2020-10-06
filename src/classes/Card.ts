@@ -12,11 +12,9 @@ export class Card implements ICard {
     public columnId: number,
     public idInColumn: number,
     public isVisible: boolean = false,
-    public isMoved: boolean = false
-  ) // public isLast: boolean = false
-  {
-    
-    this.setIsVisible(this.isVisible)
+    public isMoved: boolean = false // public isLast: boolean = false
+  ) {
+    this.setIsVisible(this.isVisible);
     // this.moveTo();
   }
 
@@ -98,24 +96,26 @@ export class Card implements ICard {
         column.nextCard.colors.includes(color!) &&
         column.nextCard.value === value
       ) {
-        return elem;
+        return true;
       }
 
-      return;
+      return false;
     }
   }
 
-  // metoda sprawdza zcy karta pasuje do jaieś kolumny
-  checkColumnForElement(column: IColumn) {
-    const { color, value } = this;
-    console.log(color, value)
-    if (
-      column.nextCard.colors.includes(color!) &&
-      column.nextCard.value === value
-    ) {
-      return column;
-    }
-  }
+  // // metoda sprawdza czy karta pasuje do kolumny
+  // checkColumnForElement(column: IColumn) {
+  //   console.log("checkColumnForElement", this)
+
+  //   const { color, value } = this;
+  //   // console.log(color, value)
+  //   if (
+  //     column.nextCard.colors.includes(color!) &&
+  //     column.nextCard.value === value
+  //   ) {
+  //     return column;
+  //   }
+  // }
 
   // nowe metody:::
   // render() {
