@@ -8,8 +8,12 @@ export interface IColumn {
   direction: "up" | "down";
   addCard(card: ICard[]): void;
   removeCards(id: number): void;
+  moveIfPossible(cards: ICard[], clickedColumn: IColumn, index: number): void;
+  getFirstCard() : ICard;
   getCardsBelow(id: number): ICard[];
   getLastCard(): ICard | null;
-  getCardId(card: ICards): number;
+  checkColumnForElement(card: ICard): this | undefined;
+  moveCardsBack(column: IColumn): void;
+  getNextCardFrom(column: IColumn): void
   moveCards(): void;
 }

@@ -4,11 +4,10 @@ import { ICard, IPosition } from "../interfaces/ICard";
 import { Card } from "./Card.js";
 
 export class Column implements IColumn {
-  // private cardsInColumn: HTMLDivElement[] = [];
   public cardsInColumn: ICard[] = [];
   public nextCard: { colors: string[]; value: number };
   public isEmpty: boolean = true;
-  readonly position: IPosition;
+  public position: IPosition;
 
   setColumnPosition(position: IPosition) {
     this.position = position;
@@ -16,10 +15,10 @@ export class Column implements IColumn {
 
   constructor(
     readonly columnNum: number,
-    public readonly direction: "up" | "down"
+    public readonly direction: "up" | "down" | null = null
   ) {
     this.nextCard = {
-      colors: ["kier", "karo", "pik", "trefl"],
+      colors: direction !== null ? ["kier", "karo", "pik", "trefl"] : [],
       value: 0,
     };
   }
@@ -48,31 +47,10 @@ export class Column implements IColumn {
   }
 
   addCard(card: ICard[]) {
-    // dodaj kartę do direction up jeśli jest to jedna kart
-    // do kolumn direction down dodawaj po kilka
-    // if (
-    //   (this.direction === "up" && card.length === 1) ||
-    //   this.direction === "down"
-    //   ) {
-    //     // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
-    //     let newPosition;
-    //     // nie interesuje mnie pierwszy dodawany obiekt
-    //     if(this.isEmpty) {
-    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-    //     } else if(this.columnNum < 11) {
-    //       newPosition = {x: this.getLastCard()?.position.x  , y: this.getLastCard()?.position.y + 100}
-    //     } else {
-    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-    //     }
-
-    //     if(this.direction === "up") {
-    //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-    //     }
-
     card.forEach((c, i) => {
       if (c instanceof Card) {
-        c.changeColumnId(this.columnNum);
-        c.changeIdInColumn(this.cardsInColumn.length + i);
+        c.setColumnId(this.columnNum);
+        c.setIdInColumn(this.cardsInColumn.length + i);
         // c.setPosition({x: newPosition.x, y: newPosition.y}).moveTo()
       }
     });
@@ -83,10 +61,6 @@ export class Column implements IColumn {
     this._setNextCard();
     // ta kolumna nie jset pusta
     if (card[0] instanceof Card) this.isEmpty = false;
-    // }
-    //  else {
-    //   card.forEach(c => c.moveTo())
-    // }
   }
 
   removeCards(id: number) {
@@ -115,7 +89,7 @@ export class Column implements IColumn {
       } else {
         newPosition = {
           x: this.getLastCard()!.position.x,
-          y: this.getLastCard()!.position.y + 100,
+          y: this.getLastCard()!.position.y + 50,
         };
       }
 
@@ -123,7 +97,7 @@ export class Column implements IColumn {
         c
           .setPosition({
             x: newPosition.x,
-            y: newPosition.y + i * 100,
+            y: newPosition.y + i * 50,
           })
           .moveTo()
       );
@@ -132,7 +106,6 @@ export class Column implements IColumn {
       this.addCard(card);
       // usuwam przeniesione karty ze starej kolumny
       clickedColumn.removeCards(id);
-      // console.log("clickedColumn", clickedColumn);
     } else {
       card.forEach((c) => c.moveTo());
       console.log("TO DZIAŁA PRAWDA??!?!?!?");
@@ -158,15 +131,8 @@ export class Column implements IColumn {
     return this.cardsInColumn[0];
   }
 
-  // zwraca index klikniętej karty
-  getCardId(data: ICards) {
-    return this.cardsInColumn.findIndex(
-      (card) =>
-        card.color === data.color && parseFloat(card.value!) === data.value
-    );
-  }
-
   // metoda sprawdza czy karta pasuje do kolumny
+  // czy można ją do niej dodać
   checkColumnForElement(card: ICard) {
     const { colors, value } = this.nextCard;
     if (colors.includes(card.color!) && value === card.value) {
@@ -179,8 +145,8 @@ export class Column implements IColumn {
     const cards: ICard[] = fromColumn.getCardsBelow(0).reverse();
     cards.forEach((c) => {
       c.setPosition({ x: 0, y: 0 }).moveTo();
-      c.setIsVisible(false);
-      c.setIsMoved(false);
+      c.setVisible(false);
+      c.setMoves(false);
     });
 
     fromColumn.removeCards(0);
@@ -207,13 +173,13 @@ export class Column implements IColumn {
       // elem.element.style.left = `${100 + i * 100}px`;
       let pos = { x: 100 + i * 100, y: 0 };
       elem.setPosition(pos).moveTo();
-      elem.setIsVisible(true);
+      elem.setVisible(true);
       if (i == 0) {
         // pozwala na przeniesienie karty
-        elem.setIsMoved(true);
+        elem.setMoves(true);
         // elem.element.classList.add("moved");
       } else {
-        elem.setIsMoved(false);
+        elem.setMoves(false);
         // elem.element.classList.remove("moved");
       }
     });

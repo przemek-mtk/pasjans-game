@@ -5,60 +5,54 @@ var ColumnNum;
     ColumnNum[ColumnNum["ForSelection"] = 11] = "ForSelection";
 })(ColumnNum || (ColumnNum = {}));
 export class Game {
-    constructor() {
+    constructor(container) {
+        this.container = container;
         this._cards = [];
-        this.columns = Array(13)
-            .fill(null)
-            .map((e, i) => {
-            if (i > 6 && i < 11)
-                return new Column(i, "up"); // kolumny dla kart od asa w górę
-            return new Column(i, "down"); //reszta
-        });
-        // columny z indexami 11 i 12 jest dla elementów mających klasę(CSS) "for-selection" - są to karty do dobrania w górynym lewym rogu
-        // columny z indexem  7-10 są dla kart od asa w górę
+        this.columns = [];
         // property dla cofania
         this._historyOfMovements = new Map();
+        this._createColumns();
+    }
+    _createColumns() {
+        for (let i = 0; i < 13; i++) {
+            let newColumn;
+            if (i < 7) {
+                // pierwsze 7 jest do gry rozlosowanymi kartami
+                newColumn = new Column(i, "down");
+            }
+            else if (i > 6 && i < 11) {
+                // kolejne 4 do układania od asa w górę
+                newColumn = new Column(i, "up");
+            }
+            else {
+                // ostatnie 2 dla kart "do doboru"
+                newColumn = new Column(i, null);
+            }
+            this.columns.push(newColumn);
+        }
     }
     // private history = {};
-    // zwraca [0,1,2,3,4, ..., 13]
-    _getArray() {
-        return [...Array(13).keys()];
-    }
     // losowa liczba <min, max>
     _randomMinMax(min, max) {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
     // zwraca tablicę 52 obiektów [{color: "", value: (random)},  ....]
-    _randomCards() {
-        let color = ["pik", "trefl", "karo", "kier"];
-        let cards = {
-            pik: this._getArray(),
-            trefl: this._getArray(),
-            karo: this._getArray(),
-            kier: this._getArray(),
-        };
-        return Array(52)
-            .fill(null)
-            .map((e) => {
-            let idColor = this._randomMinMax(0, color.length - 1);
-            let cardColor = color[idColor];
-            let idValue = this._randomMinMax(0, cards[cardColor].length - 1);
-            let valueCard = cards[cardColor].splice(idValue, 1);
-            if (cards[cardColor].length === 0) {
-                color.splice(idColor, 1);
+    _shuffleCards() {
+        const values = [...Array(13).keys()];
+        const colors = ["pik", "trefl", "karo", "kier"];
+        let cards = [];
+        let deck = [];
+        for (let value of values) {
+            for (let color of colors) {
+                cards.push({ value, color });
             }
-            return {
-                element: null,
-                color: cardColor,
-                value: valueCard[0],
-                columnId: null,
-                idInColumn: null,
-                isVisible: null,
-                isMoved: null,
-                // isLast: null,
-                position: { x: 0, y: 0 },
-            };
-        });
+        }
+        while (cards.length - 1 >= 0) {
+            const index = this._randomMinMax(0, cards.length);
+            const drawnCard = cards.splice(index, 1);
+            deck.push(...drawnCard);
+        }
+        return deck;
     }
     // dodaje elementy do przetrzymywania kart
     _addCardBoxesElements() {
@@ -100,621 +94,93 @@ export class Game {
     // tworzę i dodaje elementy reprezentujące karty
     _addCards() {
         const cards = new DocumentFragment();
-        let column = 7;
-        let lastIdInRow = 0;
+        let cardsInColumn = 7;
+        // row - potrzebuje do przesunięcia kart w poziomie i obliczenia idInColumn
         let row = 0;
-        // rozdanie kart na tą rundę
-        // const deal = this._randomCards();
-        const deal = [
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 9,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 8,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 4,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 3,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 4,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 5,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 6,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 6,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 5,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 2,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 3,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 4,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 5,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 7,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 1,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 2,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 3,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 4,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 0,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 1,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 2,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 3,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 0,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 1,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 2,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 0,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 1,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 0,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 11,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 9,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 11,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 10,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 10,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 12,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 10,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 7,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 9,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 11,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 8,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 9,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 8,
-            },
-            {
-                color: "kier",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 12,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 10,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 8,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 11,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 12,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 7,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 5,
-            },
-            {
-                color: "pik",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 6,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 7,
-            },
-            {
-                color: "karo",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 12,
-            },
-            {
-                color: "trefl",
-                columnId: null,
-                element: null,
-                idInColumn: null,
-                isMoved: null,
-                isVisible: null,
-                position: { x: 0, y: 0 },
-                value: 6,
-            },
-        ];
-        let columnId, idInColumn, isVisible, isMoved, isLast;
-        // this.cards =
-        deal.map((elem, id) => {
-            let cardContainer = document.createElement("div");
-            let icon = document.createElement("i");
-            let revers = document.createElement("i");
-            // let cColor = document.createElement("p"); // to jest do wyszucenia! - chyba
-            // let cValue = document.createElement("p"); // to jest do wyszucenia! - chyba
-            const { color, value } = elem;
-            // cardContainer.style.backgroundImage = `url(.../svg/${color}-${value}.svg)`
-            icon.style.backgroundImage = `url(../src/svg/${color}-${value}.svg)`;
-            revers.style.backgroundImage = "url(../src/svg/revers.svg)";
-            isVisible = false;
-            // isVisible = true;
-            isMoved = false;
-            // isMoved = true;
-            // isLast = false;
-            // cColor.innerText = color;
-            // cValue.innerText = value.toString();
-            icon.classList.add("icon", "front");
-            revers.classList.add("icon", "back");
-            cardContainer.classList.add("card", "invisible");
-            cardContainer.setAttribute("id", `card-${id}`);
-            // cardContainer.dataset.color = color;
-            // cardContainer.dataset.value = value.toString();
-            let card;
-            //te są dodawane do 'gry' reszta do 'doboru'
+        // index ostatniej karty w wierszu - potrzebuje do zwiększenia row i zmniejszenia cardsInColumn
+        let whenChangeRow = 6;
+        // potrzebuje do policzenia columnId
+        let firstIdCardInColumn = 0;
+        // losowane karty
+        const deck = this._shuffleCards();
+        deck.forEach((obj, id) => {
+            const cContainer = document.createElement("div");
+            const front = document.createElement("i");
+            const back = document.createElement("i");
+            const { color, value } = obj;
+            // ustawienia wyglądu dla karty
+            cContainer.setAttribute("id", `card-${id}`);
+            cContainer.classList.add("card", "invisible");
+            front.classList.add("icon", "front");
+            back.classList.add("icon", "back");
+            front.style.backgroundImage = `url(../src/svg/${color}-${value}.svg)`;
+            back.style.backgroundImage = "url(../src/svg/revers.svg)";
+            cContainer.append(front);
+            cContainer.append(back);
+            // tworzę kartę
+            const card = new Card(cContainer, color, value);
+            // wartości potrzeben do określenia właściwości karty
+            let visible = false, moves = false, position = { x: 0, y: 0 }, columnId, idInColumn;
+            // talia do gry
             if (id < 28) {
-                const top = row * 100; // do zmiany
-                const left = (id - lastIdInRow + row) * 100;
-                const indexColumn = id - lastIdInRow + row;
-                // card.style.top = `${150 + idInColumn * top}px`;
-                // card.style.left = `${100 + left}px`;
-                columnId = id - lastIdInRow + row;
-                idInColumn = row;
-                //zmiana visible dla konkretnych kart, które są ostatnimi w swojej columnie
-                if (id === lastIdInRow) {
-                    cardContainer.classList.add("visible");
-                    cardContainer.classList.remove("invisible");
-                    isVisible = true;
-                    isMoved = true;
-                    isLast = true;
+                // dla pierwszych kart w kolumnie ustaw to co niżej
+                // whenChangeRow = index ostatniej karty w wierszu
+                // id - whenChangeRow === 1 jest to zawsze osatana karta w kolumnie
+                console.log(id, whenChangeRow);
+                if (id === firstIdCardInColumn) {
+                    console.log("hellooo");
+                    visible = true;
+                    moves = true;
                 }
-                card = new Card(cardContainer, color, value, columnId, idInColumn, isVisible, isMoved
-                // isLast
-                );
-                card.setPosition({ x: left + 100, y: top + 150 }).moveTo();
-                this.columns[indexColumn].addCard([card]);
-                if ((id - lastIdInRow) % column === column - 1 && column > 1) {
-                    lastIdInRow = id + 1;
-                    column--;
-                    row++;
+                idInColumn = row;
+                columnId = id - firstIdCardInColumn + row;
+                position = { x: columnId * 100 + 100, y: row * 50 + 150 };
+                // zmieniam ustawienie wiersza i ilości kart w wierszu
+                if (id === whenChangeRow) {
+                    row += 1;
+                    cardsInColumn -= 1;
+                    firstIdCardInColumn = whenChangeRow + 1;
+                    whenChangeRow += cardsInColumn;
                 }
             }
             else {
-                cardContainer.classList.add("for-selection");
+                cContainer.classList.add("for-selection");
                 columnId = 11;
                 idInColumn = 0;
-                card = new Card(cardContainer, color, value, columnId, idInColumn, false, false
-                // false
-                );
-                card.setPosition({ x: 0, y: 0 }).moveTo();
-                this.columns[ColumnNum.ForSelection].addCard([card]);
-                // isVisible = false;
             }
+            card
+                .setVisible(visible)
+                // .setVisible(true)
+                .setMoves(moves)
+                .setColumnId(columnId)
+                .setIdInColumn(idInColumn)
+                .setPosition(position)
+                .moveTo();
             this._cards.push(card);
-            cardContainer.append(revers);
-            cardContainer.append(icon);
-            cards.append(cardContainer);
+            // dodaje kartę do odpowiedniaj kolumny
+            this.columns[columnId].addCard([card]);
+            cards.append(cContainer);
         });
-        return cards;
+        this.container.append(cards);
     }
     startGame() {
         //losuje karty
-        const container = document.querySelector("#container");
-        // this.columns[ColumnNum.ForSelection].setColumnPosition({ x: 0, y: 0 });
         const cardBoxes = this._addCardBoxesElements();
         const aceUpBoxes = this._addAceUpBoxElements();
         // ustalam pozycję dla kolumny 11
         this.columns[ColumnNum.ForSelection].setColumnPosition({ x: 0, y: 0 });
-        const cards = this._addCards();
-        container.append(aceUpBoxes);
-        container.append(cardBoxes);
-        container.append(cards);
+        this.container.append(aceUpBoxes);
+        this.container.append(cardBoxes);
+        // this.container.append(cards);
+        this._addCards();
     }
-    // zwraca klikniętą kolumnę
-    getColumn(data) {
-        return this.columns.find((col) => col.getCardId(data) > -1);
+    // zwraca kolumnę o danym numerze index
+    getColumnByIndex(num) {
+        return this.columns[num];
+    }
+    // zwraca mi piersze x kolumn
+    getColumns(num) {
+        return this.columns.slice(0, num);
     }
     // zwraca tablicę w formie tablicy kolumn, lecz zamiast Card są zwykłe obiekty
     setObjectInColums(columns) {
@@ -731,9 +197,8 @@ export class Game {
     }
     getHistory(key) {
         if (key >= 0) {
-            const prevMovement = // {
-             this._historyOfMovements.get(key);
-            console.log("KEYYYYYYYYYYYYYYYYYYYYYYYY:", prevMovement, key);
+            const prevMovement = this._historyOfMovements.get(key);
+            console.log("prevvvvMoveeee:", prevMovement, key);
             //nadpisuje wartość dla tis._cards
             this._cards = [];
             // czyszcze kolumny
@@ -749,10 +214,15 @@ export class Game {
             // dodaje do kolumn odpowiednie karty
             prevMovement.forEach((col) => {
                 col.forEach((elem) => {
-                    let newCard = new Card(elem.element, elem.color, elem.value, elem.columnId, elem.idInColumn, elem.isVisible, elem.isMoved
-                    // elem.isLast
-                    );
-                    newCard.setPosition(elem.position).moveTo();
+                    let newCard = new Card(elem.element, elem.color, elem.value);
+                    newCard
+                        .setVisible(elem.isVisible)
+                        .setMoves(elem.isMoved)
+                        .setColumnId(elem.columnId)
+                        .setIdInColumn(elem.idInColumn)
+                        .setPosition(elem.position)
+                        .moveTo();
+                    // dodaje kartę do odpowiedniej kolumny
                     this.columns[elem.columnId].addCard([newCard]);
                     this._cards.push(newCard);
                 });
@@ -770,7 +240,11 @@ export class Game {
     gameResult() {
         let result = this.columns
             .filter((col) => col.direction === "up")
-            .every((col) => col.cardsInColumn.length === 13);
+            .map((col) => {
+            console.log(col.cardsInColumn.length);
+            return col;
+        })
+            .every((col) => col.cardsInColumn.length === 14);
         console.log("WYGRAŁEŚ??? --> ", result);
         if (result) {
             alert("WYGRAŁEŚ BYCZKU! xD");
@@ -787,19 +261,17 @@ export class Game {
         console.log(columnsWithSelectionCards);
         console.log(columnsWithPlayingCards, columnsAceUp, columnsWithSelectionCards);
         if (allPlayingCardsAreVisible) {
-            const container = document.querySelector("#container");
             const btn = document.createElement("button");
             btn.textContent = "Autouzupełnianie";
-            container.append(btn);
+            this.container.append(btn);
             btn.addEventListener("click", (e) => {
                 let y = 0;
-                // dopóki długość 4 kolumn AceUp nie jest rowna 13 to chce coś robić
-                while (columnsAceUp[0].cardsInColumn.length !== 13 ||
-                    columnsAceUp[1].cardsInColumn.length !== 13 ||
-                    columnsAceUp[2].cardsInColumn.length !== 13 ||
-                    columnsAceUp[3].cardsInColumn.length !== 13) {
-                    // console.log("OK?", y);
-                    // console.log(this.columns);
+                // dopóki długość 4 kolumn AceUp nie jest rowna 14 to chce coś robić
+                // 14 bo 13 kart jednego koluoru + 1 element początkowy w kolumnie
+                while (columnsAceUp[0].cardsInColumn.length !== 14 ||
+                    columnsAceUp[1].cardsInColumn.length !== 14 ||
+                    columnsAceUp[2].cardsInColumn.length !== 14 ||
+                    columnsAceUp[3].cardsInColumn.length !== 14) {
                     for (let i = 0; i < columnsAceUp.length; i++) {
                         let nextColors = columnsAceUp[i].nextCard.colors;
                         let nextValue = columnsAceUp[i].nextCard.value;
@@ -832,14 +304,6 @@ export class Game {
                                 }
                             }
                         }
-                    }
-                    console.log(this.columns);
-                    // jeśli nic nie ma w kolumnie 0 i 1 (do doboru)
-                    // to znaczy że musiałeś ułożyć z kart które miałęś w kolumnach "do gry"
-                    if (columnsWithSelectionCards[0].cardsInColumn.length === 0 &&
-                        columnsWithSelectionCards[1].cardsInColumn.length === 0) {
-                        console.log("break?");
-                        break;
                     }
                     const len = columnsWithSelectionCards[0].cardsInColumn.length +
                         columnsWithSelectionCards[1].cardsInColumn.length;
@@ -906,551 +370,13 @@ export class Game {
                         else {
                             // jeśli nie może wziąć następnej karty to przekłada z kolumnny 1 do 0
                             columnsWithSelectionCards[0].moveCardsBack(columnsWithSelectionCards[1]);
-                            // const cards = columnsWithSelectionCards[1]
-                            //   .getCardsBelow(0)
-                            //   .reverse();
-                            // cards.forEach((c) => {
-                            //   c.setPosition({ x: 0, y: 0 }).moveTo();
-                            //   c.setIsVisible(false);
-                            //   c.setIsMoved(false);
-                            // });
-                            // columnsWithSelectionCards[1].removeCards(0);
-                            // columnsWithSelectionCards[0].addCard(cards);
                         }
                         q++;
                     }
-                    if (y < 100) {
-                        y++;
-                        // console.log(this.columns);
-                    }
-                    else {
-                        break;
-                    }
                 }
+                this.gameResult();
             });
         }
         console.log(allPlayingCardsAreVisible);
     }
 }
-// const deal = [
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 8,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 7,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 3,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 4,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 5,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 6,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 6,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 5,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 2,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 3,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 4,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 5,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 4,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 1,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 2,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 3,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 4,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 0,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 1,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 2,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 3,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 0,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 1,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 2,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 0,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 1,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 0,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 11,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 9,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 11,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 10,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 10,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 12,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 10,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 7,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 9,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 11,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 8,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 9,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 9,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 8,
-//   },
-//   {
-//     color: "kier",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 12,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 10,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 8,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 11,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 12,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 7,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 5,
-//   },
-//   {
-//     color: "pik",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 6,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 7,
-//   },
-//   {
-//     color: "karo",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 12,
-//   },
-//   {
-//     color: "trefl",
-//     columnId: null,
-//     element: null,
-//     idInColumn: null,
-//     isMoved: null,
-//     isVisible: null,
-//     position: { x: 0, y: 0 },
-//     value: 6,
-//   },
-// ];

@@ -1,13 +1,12 @@
 import { Card } from "./Card.js";
 export class Column {
-    constructor(columnNum, direction) {
+    constructor(columnNum, direction = null) {
         this.columnNum = columnNum;
         this.direction = direction;
-        // private cardsInColumn: HTMLDivElement[] = [];
         this.cardsInColumn = [];
         this.isEmpty = true;
         this.nextCard = {
-            colors: ["kier", "karo", "pik", "trefl"],
+            colors: direction !== null ? ["kier", "karo", "pik", "trefl"] : [],
             value: 0,
         };
     }
@@ -38,29 +37,10 @@ export class Column {
         }
     }
     addCard(card) {
-        // dodaj kartę do direction up jeśli jest to jedna kart
-        // do kolumn direction down dodawaj po kilka
-        // if (
-        //   (this.direction === "up" && card.length === 1) ||
-        //   this.direction === "down"
-        //   ) {
-        //     // zmienima numer kolumny i miejsce w kolumnie dla każdej karty którą chce dodać do tej kolumny
-        //     let newPosition;
-        //     // nie interesuje mnie pierwszy dodawany obiekt
-        //     if(this.isEmpty) {
-        //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-        //     } else if(this.columnNum < 11) {
-        //       newPosition = {x: this.getLastCard()?.position.x  , y: this.getLastCard()?.position.y + 100}
-        //     } else {
-        //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-        //     }
-        //     if(this.direction === "up") {
-        //       newPosition = {x: this.position.x + 5, y: this.position.y + 5}
-        //     }
         card.forEach((c, i) => {
             if (c instanceof Card) {
-                c.changeColumnId(this.columnNum);
-                c.changeIdInColumn(this.cardsInColumn.length + i);
+                c.setColumnId(this.columnNum);
+                c.setIdInColumn(this.cardsInColumn.length + i);
                 // c.setPosition({x: newPosition.x, y: newPosition.y}).moveTo()
             }
         });
@@ -71,10 +51,6 @@ export class Column {
         // ta kolumna nie jset pusta
         if (card[0] instanceof Card)
             this.isEmpty = false;
-        // }
-        //  else {
-        //   card.forEach(c => c.moveTo())
-        // }
     }
     removeCards(id) {
         this.cardsInColumn.splice(id);
@@ -98,20 +74,19 @@ export class Column {
             else {
                 newPosition = {
                     x: this.getLastCard().position.x,
-                    y: this.getLastCard().position.y + 100,
+                    y: this.getLastCard().position.y + 50,
                 };
             }
             card.forEach((c, i) => c
                 .setPosition({
                 x: newPosition.x,
-                y: newPosition.y + i * 100,
+                y: newPosition.y + i * 50,
             })
                 .moveTo());
             // dodaje przenoszona karty do kolumny nad którą upuściłem
             this.addCard(card);
             // usuwam przeniesione karty ze starej kolumny
             clickedColumn.removeCards(id);
-            // console.log("clickedColumn", clickedColumn);
         }
         else {
             card.forEach((c) => c.moveTo());
@@ -133,11 +108,8 @@ export class Column {
     getFirstCard() {
         return this.cardsInColumn[0];
     }
-    // zwraca index klikniętej karty
-    getCardId(data) {
-        return this.cardsInColumn.findIndex((card) => card.color === data.color && parseFloat(card.value) === data.value);
-    }
     // metoda sprawdza czy karta pasuje do kolumny
+    // czy można ją do niej dodać
     checkColumnForElement(card) {
         const { colors, value } = this.nextCard;
         if (colors.includes(card.color) && value === card.value) {
@@ -149,8 +121,8 @@ export class Column {
         const cards = fromColumn.getCardsBelow(0).reverse();
         cards.forEach((c) => {
             c.setPosition({ x: 0, y: 0 }).moveTo();
-            c.setIsVisible(false);
-            c.setIsMoved(false);
+            c.setVisible(false);
+            c.setMoves(false);
         });
         fromColumn.removeCards(0);
         this.addCard(cards);
@@ -174,14 +146,14 @@ export class Column {
             // elem.element.style.left = `${100 + i * 100}px`;
             let pos = { x: 100 + i * 100, y: 0 };
             elem.setPosition(pos).moveTo();
-            elem.setIsVisible(true);
+            elem.setVisible(true);
             if (i == 0) {
                 // pozwala na przeniesienie karty
-                elem.setIsMoved(true);
+                elem.setMoves(true);
                 // elem.element.classList.add("moved");
             }
             else {
-                elem.setIsMoved(false);
+                elem.setMoves(false);
                 // elem.element.classList.remove("moved");
             }
         });

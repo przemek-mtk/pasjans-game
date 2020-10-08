@@ -1,27 +1,24 @@
 export class Card {
-    constructor(element, color, value, columnId, idInColumn, isVisible = false, isMoved = false // public isLast: boolean = false
-    ) {
+    constructor(element, color, value) {
         this.element = element;
         this.color = color;
         this.value = value;
-        this.columnId = columnId;
-        this.idInColumn = idInColumn;
-        this.isVisible = isVisible;
-        this.isMoved = isMoved;
         this.position = { x: 0, y: 0 };
-        this.setIsVisible(this.isVisible);
-        // this.moveTo();
+        this.columnId = 0;
+        this.idInColumn = 0;
+        this.isVisible = false;
+        this.isMoved = false;
     }
     // metoda do poruszania kartą
     move(e, position, index) {
-        this.element.style.zIndex = "9999";
-        this.element.style.top = e.clientY + position.y + 100 * index + "px";
+        this.element.style.zIndex = (9000 + this.idInColumn).toString();
+        this.element.style.top = e.clientY + position.y + 50 * index + "px";
         this.element.style.left = e.clientX + position.x + "px";
     }
     // metoda ustawiania karty w odpowiednim miejscu
     // albo wraca z powrotem, albo ląduje na karcie do której pasuje
     moveTo() {
-        this.element.style.zIndex = "10";
+        this.element.style.zIndex = this.idInColumn.toString();
         this.element.style.top = this.position.y + "px";
         this.element.style.left = this.position.x + "px";
     }
@@ -75,52 +72,37 @@ export class Card {
                 column.nextCard.value === value) {
                 return true;
             }
-            return false;
         }
+        return false;
     }
-    // // metoda sprawdza czy karta pasuje do kolumny
-    // checkColumnForElement(column: IColumn) {
-    //   console.log("checkColumnForElement", this)
-    //   const { color, value } = this;
-    //   // console.log(color, value)
-    //   if (
-    //     column.nextCard.colors.includes(color!) &&
-    //     column.nextCard.value === value
-    //   ) {
-    //     return column;
-    //   }
-    // }
-    // nowe metody:::
-    // render() {
-    //   let pos = {
-    //     x: this.columnId < 12 ? 100 + this.columnId * 100 : 0,
-    //     y: this.columnId < 12 ? 150 + this.idInColumn * 100 : 0,
-    //   };
-    //   this.setPosition(pos);
-    //   this.moveTo();
-    // }
-    changeColumnId(collumnId) {
+    setColumnId(collumnId) {
         this.columnId = collumnId;
+        return this;
     }
-    changeIdInColumn(id) {
+    setIdInColumn(id) {
+        this.element.style.zIndex = id.toString();
         this.idInColumn = id;
+        return this;
     }
-    //   NIE WIME CZY POTRZEBUJE ISLAST !!!!
-    // setIsLast(value: boolean) {
-    //   this.isLast = value;
-    // }
-    setIsVisible(value) {
+    setVisible(value) {
         this.isVisible = value;
+        // obracam kartę w zależności od wartości argumentu
         if (value) {
-            this.element.classList.add("visible");
-            this.element.classList.remove("invisible");
+            this.element.firstElementChild.style.transform =
+                "perspective(600px) rotateY(0deg)";
+            this.element.lastElementChild.style.transform =
+                "perspective(600px) rotateY(180deg)";
         }
         else {
-            this.element.classList.add("invisible");
-            this.element.classList.remove("visible");
+            this.element.firstElementChild.style.transform =
+                "perspective(600px) rotateY(-180deg)";
+            this.element.lastElementChild.style.transform =
+                "perspective(600px) rotateY(0deg)";
         }
+        return this;
     }
-    setIsMoved(value) {
+    setMoves(value) {
         this.isMoved = value;
+        return this;
     }
 }

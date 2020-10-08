@@ -55,29 +55,6 @@
         transition: transform .5s linear 0s;
       }
 
-      .card.invisible .front{
-        transform: perspective(600px) rotateY(-180deg);
-      }
-
-      .card.invisible .back{
-        transform: perspective(600px) rotateY(0deg);
-      }
-
-      .card p {
-        margin: 0;
-        padding: 0;
-      }
-
-      .invisible {
-        background: brown;
-      }
-
-      .visible {
-        /* background: transparent; */
-        /* border-color: yellow; */
-        border-color: black;
-      }
-
       /* dla karty kiedy jest przenoszona */
       .hide {
         transform: translateX(-9999px);
@@ -85,7 +62,7 @@
 
       /* tu trafiają karty do gry */
       .cards-box {
-        width: 50px;
+        width: 80px;
         height: 100px;
         border: 2px solid green;
         border-radius: 4px;
