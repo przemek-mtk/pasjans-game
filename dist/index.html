@@ -5,108 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pasjans</title>
     <script src="./main.js" type="module" defer></script>
-    <style>
-      html,
-      body {
-        width: 100%;
-        height: 100%;
-        background-color: #333;
-      }
-
-      #container {
-        position: relative;
-      }
-
-      .card {
-        width: 70px;
-        height: 90px;
-        /* margin: 10px; */
-        border: 2px solid red;
-        /* display: inline-block; */
-        color: #fff;
-        /* vertical-align: middle; */
-
-        position: absolute;
-        /* top: 0; left: 0; */
-        user-select: none;
-      }
-
-      .icon {
-        position: absolute;
-        top: 0;
-        left: 0;
-        display: block;
-        width: 100%;
-        height: 100%;
-        background-repeat: no-repeat;
-        background-size: contain;
-        background-position: center center;
-      }
-
-      .front {
-        transform: perspective(600px) rotateY(0deg);
-        backface-visibility: hidden;
-        transition: transform .5s linear 0s;
-      }
-
-      .back {
-        transform: perspective(600px) rotateY(180deg);
-        backface-visibility: hidden;
-        transition: transform .5s linear 0s;
-      }
-
-      /* dla karty kiedy jest przenoszona */
-      .hide {
-        transform: translateX(-9999px);
-      }
-
-      /* tu trafiają karty do gry */
-      .cards-box {
-        width: 80px;
-        height: 100px;
-        border: 2px solid green;
-        border-radius: 4px;
-        position: absolute;
-      }
-
-      /* element odpowiedzialny za powrót kart do doboru */
-      .repeat {
-        width: 20px;
-        height: 20px;
-        border: 10px solid green;
-        border-radius: 100%;
-        position: absolute;
-        top: 25px;
-        left: 0;
-      }
-
-      .above-as {
-        width: 100px;
-        height: 120px;
-        border: 2px solid green;
-        position: absolute;
-      }
-
-      #option-bar {
-        position: absolute;
-        top: 800px;
-      }
-
-      #movements,
-      #timer {
-        color: #fff;
-      }
-    </style>
+    <link rel="stylesheet" href="../src/style/style.css">
   </head>
   <body>
-    <div class="repeat"></div>
-    <div id="container"></div>
+    <div id="wrapper">
+      <div class="repeat"></div>
+      <div id="container"></div>
 
-    <div id="option-bar">
-      <button id="new-game">NEW GAME</button>
-      <div id="movements"></div>
-      <div id="timer"></div>
-      <button id="undo">BACK</button>
+      <div id="option-bar">
+        <button id="new-game" class="btn">NEW GAME</button>
+        <div id="movements"></div>
+        <div id="timer"></div>
+        <button id="undo" class="btn">BACK</button>
+      </div>
     </div>
   </body>
 </html>

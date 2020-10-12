@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Column } from "./Column.js";
 import { Card } from "./Card.js";
 var ColumnNum;
@@ -9,10 +18,10 @@ export class Game {
         this.container = container;
         this._cards = [];
         this.columns = [];
-        // property dla cofania
         this._historyOfMovements = new Map();
         this._createColumns();
     }
+    // tworzy kolumny dla kart
     _createColumns() {
         for (let i = 0; i < 13; i++) {
             let newColumn;
@@ -31,7 +40,6 @@ export class Game {
             this.columns.push(newColumn);
         }
     }
-    // private history = {};
     // losowa liczba <min, max>
     _randomMinMax(min, max) {
         return Math.floor(Math.random() * (max - min + 1) + min);
@@ -56,40 +64,38 @@ export class Game {
     }
     // dodaje elementy do przetrzymywania kart
     _addCardBoxesElements() {
-        const cardBoxes = new DocumentFragment();
+        const divContainer = new DocumentFragment();
         for (let i = 0; i < 7; i++) {
-            const box = document.createElement("div");
-            box.classList.add("cards-box", "special");
-            box.style.top = `${145}px`;
-            box.style.left = `${95 + i * 100}px`;
+            const div = document.createElement("div");
+            div.classList.add("cards-box");
+            div.style.left = `${i * 100}px`;
             const boxForCards = {
-                element: box,
+                element: div,
             };
-            this.columns[i].setColumnPosition({ x: 95 + i * 100, y: 145 });
+            this.columns[i].setColumnPosition({ x: i * 100, y: 145 });
             this.columns[i].addCard([boxForCards]);
-            cardBoxes.append(box);
+            divContainer.append(div);
         }
-        return cardBoxes;
+        this.container.append(divContainer);
     }
     // tworzę elementy dla kart od asa w górę
     _addAceUpBoxElements() {
-        const aceUpBoxes = new DocumentFragment();
+        const divContainer = new DocumentFragment();
         this.columns
             .filter((col) => col.direction === "up")
             .forEach((col, i) => {
             const index = col.columnNum;
-            const aAs = document.createElement("div");
-            aAs.classList.add("above-as", "special");
-            aAs.style.top = `${0}px`;
-            aAs.style.left = `${400 + i * 100}px`;
-            const aAsBox = {
-                element: aAs,
+            const divAce = document.createElement("div");
+            divAce.classList.add("above-as");
+            divAce.style.left = `${300 + i * 100}px`;
+            const aceBox = {
+                element: divAce,
             };
-            this.columns[index].setColumnPosition({ x: 400 + i * 100, y: 0 });
-            this.columns[index].addCard([aAsBox]);
-            aceUpBoxes.append(aAs);
+            this.columns[index].setColumnPosition({ x: 300 + i * 100, y: 0 });
+            this.columns[index].addCard([aceBox]);
+            divContainer.append(divAce);
         });
-        return aceUpBoxes;
+        this.container.append(divContainer);
     }
     // tworzę i dodaje elementy reprezentujące karty
     _addCards() {
@@ -110,7 +116,7 @@ export class Game {
             const { color, value } = obj;
             // ustawienia wyglądu dla karty
             cContainer.setAttribute("id", `card-${id}`);
-            cContainer.classList.add("card", "invisible");
+            cContainer.classList.add("card");
             front.classList.add("icon", "front");
             back.classList.add("icon", "back");
             front.style.backgroundImage = `url(../src/svg/${color}-${value}.svg)`;
@@ -120,21 +126,18 @@ export class Game {
             // tworzę kartę
             const card = new Card(cContainer, color, value);
             // wartości potrzeben do określenia właściwości karty
-            let visible = false, moves = false, position = { x: 0, y: 0 }, columnId, idInColumn;
+            let visible = false, moves = false, columnId, idInColumn;
             // talia do gry
             if (id < 28) {
                 // dla pierwszych kart w kolumnie ustaw to co niżej
                 // whenChangeRow = index ostatniej karty w wierszu
                 // id - whenChangeRow === 1 jest to zawsze osatana karta w kolumnie
-                console.log(id, whenChangeRow);
                 if (id === firstIdCardInColumn) {
-                    console.log("hellooo");
                     visible = true;
                     moves = true;
                 }
                 idInColumn = row;
                 columnId = id - firstIdCardInColumn + row;
-                position = { x: columnId * 100 + 100, y: row * 50 + 150 };
                 // zmieniam ustawienie wiersza i ilości kart w wierszu
                 if (id === whenChangeRow) {
                     row += 1;
@@ -150,11 +153,10 @@ export class Game {
             }
             card
                 .setVisible(visible)
-                // .setVisible(true)
                 .setMoves(moves)
                 .setColumnId(columnId)
                 .setIdInColumn(idInColumn)
-                .setPosition(position)
+                .setPosition({ x: 0, y: 0 })
                 .moveTo();
             this._cards.push(card);
             // dodaje kartę do odpowiedniaj kolumny
@@ -163,42 +165,63 @@ export class Game {
         });
         this.container.append(cards);
     }
+    // ustawienie dla Card odpowiednich pozycji - z późnieniem
+    _dealCards() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let position;
+            for (let card of this._cards) {
+                yield this._sleep(90);
+                if (card.columnId < 7) {
+                    position = {
+                        x: card.columnId * 100 + 5,
+                        y: card.idInColumn * 50 + 100,
+                    };
+                }
+                else {
+                    break;
+                }
+                card.setPosition(position).moveTo();
+            }
+        });
+    }
+    // zwraca tablicę w formie tablicy kolumn, lecz zamiast Card są zwykłe obiekty
+    _setObjectInColums(columns) {
+        return columns.map((col) => {
+            return col.cardsInColumn
+                .filter((card) => card instanceof Card)
+                .map((card) => (Object.assign({}, card)));
+        });
+    }
+    // opóźnienie w wu=ykonywaniu kodu
+    _sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+    // start gry
     startGame() {
-        //losuje karty
-        const cardBoxes = this._addCardBoxesElements();
-        const aceUpBoxes = this._addAceUpBoxElements();
+        this._addCardBoxesElements();
+        this._addAceUpBoxElements();
+        this._addCards();
+        this._dealCards();
         // ustalam pozycję dla kolumny 11
         this.columns[ColumnNum.ForSelection].setColumnPosition({ x: 0, y: 0 });
-        this.container.append(aceUpBoxes);
-        this.container.append(cardBoxes);
-        // this.container.append(cards);
-        this._addCards();
     }
     // zwraca kolumnę o danym numerze index
-    getColumnByIndex(num) {
-        return this.columns[num];
+    getColumnByIndex(index) {
+        return this.columns[index];
     }
     // zwraca mi piersze x kolumn
     getColumns(num) {
         return this.columns.slice(0, num);
     }
-    // zwraca tablicę w formie tablicy kolumn, lecz zamiast Card są zwykłe obiekty
-    setObjectInColums(columns) {
-        return columns.map((col) => {
-            return col.cardsInColumn
-                .filter((card) => card.hasOwnProperty("color"))
-                .map((x) => (Object.assign({}, x)));
-        });
-    }
+    // zapisuje ruch w historii
     setHistory(key) {
-        const value = this.setObjectInColums(this.columns);
+        const value = this._setObjectInColums(this.columns);
         this._historyOfMovements.set(key, value);
-        console.log("zapisuje pod kluczem:::", key, value);
     }
+    // odczytuje zapisane ruchy
     getHistory(key) {
         if (key >= 0) {
             const prevMovement = this._historyOfMovements.get(key);
-            console.log("prevvvvMoveeee:", prevMovement, key);
             //nadpisuje wartość dla tis._cards
             this._cards = [];
             // czyszcze kolumny
@@ -214,59 +237,57 @@ export class Game {
             // dodaje do kolumn odpowiednie karty
             prevMovement.forEach((col) => {
                 col.forEach((elem) => {
-                    let newCard = new Card(elem.element, elem.color, elem.value);
+                    const { element, color, value, isVisible, isMoved, columnId, idInColumn, position, } = elem;
+                    let newCard = new Card(element, color, value);
                     newCard
-                        .setVisible(elem.isVisible)
-                        .setMoves(elem.isMoved)
-                        .setColumnId(elem.columnId)
-                        .setIdInColumn(elem.idInColumn)
-                        .setPosition(elem.position)
+                        .setVisible(isVisible)
+                        .setMoves(isMoved)
+                        .setColumnId(columnId)
+                        .setIdInColumn(idInColumn)
+                        .setPosition(position)
                         .moveTo();
                     // dodaje kartę do odpowiedniej kolumny
-                    this.columns[elem.columnId].addCard([newCard]);
+                    this.columns[columnId].addCard([newCard]);
                     this._cards.push(newCard);
                 });
             });
         }
         else {
-            console.log("Nie możesz cofnać!!");
+            alert("Nie możesz cofnąć!");
         }
-        console.log("po wepchnieciu kart", this._cards);
-        console.log("TO DOSTAJE Z POWROTEM :::: ", this.columns);
     }
+    // znajduje kartę na posdtawie elementu DOM
     findCard(element) {
         return this._cards.find((c) => c.element === element);
     }
+    // sprawdza czy gra została ukończona powodzeniem
     gameResult() {
         let result = this.columns
             .filter((col) => col.direction === "up")
-            .map((col) => {
-            console.log(col.cardsInColumn.length);
-            return col;
-        })
             .every((col) => col.cardsInColumn.length === 14);
-        console.log("WYGRAŁEŚ??? --> ", result);
         if (result) {
-            alert("WYGRAŁEŚ BYCZKU! xD");
+            // cas na ukończenie animacji
+            setTimeout(() => {
+                alert("You win!");
+            }, 600);
         }
     }
+    // umożliwia autouzupełnienie kolumn "UP"
     autocompleteCards() {
         // biorę tylko kolumny do których rozdaję karty na poczatku (index: 0-6)
-        let allPlayingCardsAreVisible = this._cards
+        let allCardsAreVisible = this._cards
             .filter((card) => card.columnId < 7)
             .every((card) => card.isVisible === true);
-        const columnsWithPlayingCards = this.columns.slice(0, 7);
-        const columnsAceUp = this.columns.filter((col) => col.direction === "up");
-        const columnsWithSelectionCards = this.columns.slice(11);
-        console.log(columnsWithSelectionCards);
-        console.log(columnsWithPlayingCards, columnsAceUp, columnsWithSelectionCards);
-        if (allPlayingCardsAreVisible) {
+        if (allCardsAreVisible) {
+            const columnsWithPlayingCards = this.columns.slice(0, 7);
+            const columnsAceUp = this.columns.filter((col) => col.direction === "up");
+            const columnsWithSelectionCards = this.columns.slice(11);
             const btn = document.createElement("button");
-            btn.textContent = "Autouzupełnianie";
+            btn.textContent = "Autocomplete";
+            btn.classList.add("autocomplete", "btn");
             this.container.append(btn);
-            btn.addEventListener("click", (e) => {
-                let y = 0;
-                // dopóki długość 4 kolumn AceUp nie jest rowna 14 to chce coś robić
+            btn.addEventListener("click", (e) => __awaiter(this, void 0, void 0, function* () {
+                // dopóki długość 4 kolumn AceUp nie jest rowna 14 to chce układać karty
                 // 14 bo 13 kart jednego koluoru + 1 element początkowy w kolumnie
                 while (columnsAceUp[0].cardsInColumn.length !== 14 ||
                     columnsAceUp[1].cardsInColumn.length !== 14 ||
@@ -275,27 +296,18 @@ export class Game {
                     for (let i = 0; i < columnsAceUp.length; i++) {
                         let nextColors = columnsAceUp[i].nextCard.colors;
                         let nextValue = columnsAceUp[i].nextCard.value;
-                        console.log("nextColor:", nextColors, "nextValue:", nextValue);
                         for (let k = 0; k < columnsWithPlayingCards.length; k++) {
                             if (columnsWithPlayingCards[k].cardsInColumn.length > 1) {
                                 const lastCard = columnsWithPlayingCards[k].getLastCard();
-                                const lastColor = lastCard === null || lastCard === void 0 ? void 0 : lastCard.color;
-                                const lastValue = lastCard === null || lastCard === void 0 ? void 0 : lastCard.value;
+                                const lastColor = lastCard.color;
+                                const lastValue = lastCard.value;
                                 // jeśli karta pasuje to ...
                                 if (nextColors.includes(lastColor) && nextValue === lastValue) {
+                                    yield this._sleep(110);
+                                    // do kolumny "UP" dodaj lastCard
+                                    // z columny columnsWithPlayingCards usuń element o indeksie lastCard.idInColumn
                                     columnsAceUp[i].moveIfPossible([lastCard], columnsWithPlayingCards[k], lastCard.idInColumn);
-                                    // usuń ją
-                                    // columnsWithPlayingCards[k].removeCards(lastCard.idInColumn);
-                                    // // nadaj jej pozycje
-                                    // lastCard
-                                    //   .setPosition({
-                                    //     x: columnsAceUp[i].getFirstCard().position.x + 5,
-                                    //     y: columnsAceUp[i].getFirstCard().position.y + 5,
-                                    //   })
-                                    //   .moveTo();
-                                    // // dodaj ją
-                                    // columnsAceUp[i].addCard([lastCard]);
-                                    // nadpisz wartość dla 'i' i dla 'k'
+                                    // nadpisz wartość dla 'i' i dla 'k' żeby pętla zaczęła od początku
                                     i = 0;
                                     k = 0;
                                     // nadpisz nextColor i nextValue
@@ -305,43 +317,33 @@ export class Game {
                             }
                         }
                     }
-                    const len = columnsWithSelectionCards[0].cardsInColumn.length +
-                        columnsWithSelectionCards[1].cardsInColumn.length;
-                    let q = 0;
-                    while (q < len) {
+                    const lengthFirstSelectionCol = columnsWithSelectionCards[0].cardsInColumn.length;
+                    const lengthSecondSelectionCol = columnsWithSelectionCards[1].cardsInColumn.length;
+                    // ilość kart w obydwu kolumnach 'do doboru'
+                    const lengthSelectionColumn = lengthFirstSelectionCol + lengthSecondSelectionCol;
+                    //licznik kontrolujący ilośc sprawdzonych kart
+                    let counter = 0;
+                    while (counter < lengthSelectionColumn) {
                         // jeśli kolumna do doboru jest pusta to dodaj do niej kartę
-                        if (columnsWithSelectionCards[1].cardsInColumn.length === 0) {
+                        if (lengthSecondSelectionCol === 0) {
                             // dodaje ostatnią kartą z kolumny z indexem 0 do kolumny z indexem 1
+                            yield this._sleep(110);
                             columnsWithSelectionCards[1].getNextCardFrom(columnsWithSelectionCards[0]);
-                            // const lastCardInSelecion: ICard = columnsWithSelectionCards[0].getLastCard();
-                            // // i dodaję ją do kolumny obok
-                            // columnsWithSelectionCards[1].addCard([lastCardInSelecion]);
-                            // // usuwam z forSelection ostatnią kartę -  to ta kliknięta
-                            // columnsWithSelectionCards[0].removeCards(-1);
-                            // // ruszam ostatnie 3 karty jakie trafiły do kolumny 12 (Column.ForSelectionNext)
-                            // columnsWithSelectionCards[1].moveCards();
                         }
-                        let lastCard = columnsWithSelectionCards[1].getLastCard();
-                        let lastColor = lastCard.color;
-                        let lastValue = lastCard.value;
+                        const lastCard = columnsWithSelectionCards[1].getLastCard();
+                        const lastColor = lastCard.color;
+                        const lastValue = lastCard.value;
+                        // true - jeśli znajdzie pasującą kartę - dalej przerywa pętle
                         let hasFound = false;
                         for (let j = 0; j < columnsAceUp.length; j++) {
-                            let nextColors = columnsAceUp[j].nextCard.colors;
-                            let nextValue = columnsAceUp[j].nextCard.value;
+                            const nextColors = columnsAceUp[j].nextCard.colors;
+                            const nextValue = columnsAceUp[j].nextCard.value;
                             // jeśli karta z 'do doboru' pasuje to ...
                             if (nextColors.includes(lastColor) && nextValue === lastValue) {
+                                yield this._sleep(110);
+                                // do kolumny "UP" dodaj lastCard
+                                // z columny columnsWithSelectionCards usuń element o indeksie lastCard.idInColumn
                                 columnsAceUp[j].moveIfPossible([lastCard], columnsWithSelectionCards[1], lastCard.idInColumn);
-                                // usuń ją
-                                // columnsWithSelectionCards[1].removeCards(lastCard.idInColumn);
-                                // // nadaj jej pozycje
-                                // lastCard
-                                //   .setPosition({
-                                //     x: columnsAceUp[j].getFirstCard().position.x + 5,
-                                //     y: columnsAceUp[j].getFirstCard().position.y + 5,
-                                //   })
-                                //   .moveTo();
-                                // // dodaj ją
-                                // columnsAceUp[j].addCard([lastCard]);
                                 // porusz resztę kart w "do doboru"
                                 columnsWithSelectionCards[1].moveCards();
                                 // znalazłem więc kończę pętle while
@@ -350,33 +352,26 @@ export class Game {
                                 break;
                             }
                         }
-                        if (hasFound) {
-                            console.log("breaaaaaak");
+                        // zakończ pętle, znalazłem kartę pasującą
+                        if (hasFound)
                             break;
-                        }
                         // jesli nie znalazł
                         // to bierze następną kartę jeśli może
-                        if (columnsWithSelectionCards[0].cardsInColumn.length > 0) {
+                        if (lengthFirstSelectionCol > 0) {
+                            yield this._sleep(110);
                             // dodaje ostatnią kartą z kolumny z indexem 0 do kolumny z indexem 1
                             columnsWithSelectionCards[1].getNextCardFrom(columnsWithSelectionCards[0]);
-                            // const lastCardInSelecion: ICard = columnsWithSelectionCards[0].getLastCard();
-                            // // i dodaję ją do kolumny obok
-                            // columnsWithSelectionCards[1].addCard([lastCardInSelecion]);
-                            // // usuwam z forSelection ostatnią kartę -  to ta kliknięta
-                            // columnsWithSelectionCards[0].removeCards(-1);
-                            // // ruszam ostatnie 3 karty jakie trafiły do kolumny 12 (Column.ForSelectionNext)
-                            // columnsWithSelectionCards[1].moveCards();
                         }
                         else {
+                            yield this._sleep(110);
                             // jeśli nie może wziąć następnej karty to przekłada z kolumnny 1 do 0
                             columnsWithSelectionCards[0].moveCardsBack(columnsWithSelectionCards[1]);
                         }
-                        q++;
+                        counter++;
                     }
                 }
                 this.gameResult();
-            });
+            }));
         }
-        console.log(allPlayingCardsAreVisible);
     }
 }

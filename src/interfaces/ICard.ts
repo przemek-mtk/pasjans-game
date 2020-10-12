@@ -2,18 +2,18 @@ import { IColumn } from "./IColumn";
 
 export interface ICard {
   element: HTMLDivElement;
-  color: string;
-  value: number;
+  color?: string;
+  value?: number;
   columnId: number;
   idInColumn: number;
   isVisible: boolean;
   isMoved: boolean;
-  position: { x: number; y: number };
+  position: IPosition;
 
   move(e: MouseEvent, position: IPosition, index: number): void;
   moveTo(): void;
-  checkIfFits(elem: ICard, column: IColumn): boolean;
   setPosition(position: IPosition): this;
+  checkIfFits(elem: ICard, column: IColumn): boolean;
   setColumnId(collumnId: number): this;
   setIdInColumn(id: number): this;
   setVisible(value: boolean): this;
@@ -23,4 +23,8 @@ export interface ICard {
 export interface IPosition {
   x: number;
   y: number;
+}
+
+export interface IElement {
+  element: HTMLDivElement
 }

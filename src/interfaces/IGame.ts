@@ -1,27 +1,24 @@
-import { ICards } from "./ICards";
 import { IColumn } from "./IColumn";
-import { ICard } from "./ICard";
+import { ICard, IPosition } from "./ICard";
 
 export interface IGame {
-  columns: IColumn[];
   startGame(): void;
-  //czy get cards jest potrzebne??
-  // getCards(): ICard[];
-  getColumn(data: ICards): IColumn | undefined;
-  setObjectInColums(
-    columns: IColumn[]
-  ): {
-    element: HTMLDivElement;
-    color: string;
-    value: number;
-    columnId: number;
-    idInColumn: number;
-    isVisible: boolean;
-    isMoved: boolean;
-    // isLast: boolean;
-    position: { x: number; y: number };
-  }[][];
-  getHistory(key: number): void;
+  getColumnByIndex(index: number): IColumn;
+  getColumns(index: number): IColumn[];
   setHistory(key: number): void;
-  findCard(element: HTMLDivElement): ICard;
+  getHistory(key: number): void;
+  findCard(element: HTMLDivElement): ICard | undefined;
+  gameResult(): void;
+  autocompleteCards(): void;
+}
+
+export interface IObjectInColum {
+  element: HTMLDivElement;
+  color?: string;
+  value?: number;
+  columnId: number;
+  idInColumn: number;
+  isVisible: boolean;
+  isMoved: boolean;
+  position: IPosition;
 }
